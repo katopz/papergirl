@@ -129,9 +129,9 @@ describe('Papergirl', function() {
         });
     });
 
-    it('will get `upsert` call when no cached data [promise]', function(done) {
+    it('will get `dirty` call when no cached data [promise]', function(done) {
 
-        var upsert = function(data) {
+        var dirty = function(data) {
             assert(expect(data).to.be(FOO_DATA));
             done();
         };
@@ -140,16 +140,16 @@ describe('Papergirl', function() {
             assert(expect(data).to.not.be.ok);
             papergirl.request(FOO_URL, {
                 'strategy': papergirl.cacheFirst,
-                'upsert': upsert
+                'dirty': dirty
             }).then(function(data) {
                 assert(expect(data).to.be(FOO_DATA));
             });
         });
     });
 
-    it('will get `upsert` call when use cached data [promise]', function(done) {
+    it('will get `match` call when use cached data [promise]', function(done) {
 
-        var upsert = function(data) {
+        var match = function(data) {
             assert(expect(data).to.be(FOO_DATA));
             done();
         };
@@ -158,7 +158,7 @@ describe('Papergirl', function() {
             assert(expect(data).to.be(FOO_DATA));
             papergirl.request(FOO_URL, {
                 'strategy': papergirl.cacheFirst,
-                'upsert': upsert
+                'match': match
             }).then(function(data) {
                 assert(expect(data).to.be(FOO_DATA));
             });
@@ -167,7 +167,7 @@ describe('Papergirl', function() {
 
     it('can get `etag` if has [promise]', function(done) {
         // etag will set after local events fire.
-        var upsert = function(data, url, options) {
+        var dirty = function(data, url, options) {
             assert(expect(data).to.be(FOO_DATA));
             papergirl.getETAG(url).then(function(etag) {
                 assert(expect(etag).to.be(options.etag));
@@ -178,7 +178,7 @@ describe('Papergirl', function() {
         // Retain etag
         var options = {
             'strategy': papergirl.cacheFirst,
-            'upsert': upsert
+            'dirty': dirty
         };
 
         papergirl.request(FOO_URL, options).then(function(data) {

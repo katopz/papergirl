@@ -160,10 +160,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            } catch (e) {
 	                                console.log(e);
 	                            }
+
 	                            self.setData(url, responseText, etag).then(function (data) {
 	                                // Insert or Update?
 	                                var isUpsert = false;
-	                                if (!options.responseText) {
+	                                if (options.responseText === null || typeof options.responseText === 'undefined') {
 	                                    // Insert : no cached data
 	                                    self._hook(options, 'insert', [data, url, options]);
 
@@ -178,11 +179,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                }
 
 	                                // Upsert? : Insert or Update
-	                                self._hook(options, 'upsert', [data, url, options]);
+	                                if (isUpsert) {
+	                                    // Dirty.
+	                                    self._hook(options, 'dirty', [data, url, options]);
+	                                } else {
+	                                    // No dirty.
+	                                    self._hook(options, 'match', [data, url, options]);
+	                                }
+	                                // Free some ram.
+	                                self.delloc(options);
 	                            });
 
-	                            // Free some ram.
-	                            self.delloc(options);
 	                            break;
 	                        case 304:
 	                            // No update, will use data in local storage.
@@ -190,7 +197,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                // Cached data.
 	                                resolve(options.responseText);
 
-	                                // Hook no update
+	                                // Hook no modify
 	                                self._hook(options, 'not_mod', [options.responseText, url, options]);
 	                            } else {
 	                                // Clear ETAG by set as null.
