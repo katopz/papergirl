@@ -1,6 +1,6 @@
 /*!
     Papergirl -- XHR+ETAG
-    Version 0.1.0
+    Version 0.2.0
 */
 (function() {
 var define, requireModule, require, requirejs;

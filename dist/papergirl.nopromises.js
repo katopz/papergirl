@@ -1,6 +1,6 @@
 /*!
     Papergirl -- XHR+ETAG
-    Version 0.1.0
+    Version 0.2.0
 */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
