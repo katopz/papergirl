@@ -1,0 +1,24 @@
+{
+    "name": "papergirl",
+    "description": "XHR with ETAG via localForage",
+    "repository": {
+        "url": "https://katopz.github.io/papergirl",
+        "license": "MIT",
+        "tests": "https://travis-ci.org/katopz/papergirl"
+    },
+    "participate": {
+        "home": "https://katopz.github.io/papergirl",
+        "docs": "https://katopz.github.io/papergirl"
+    },
+    "keywords": [
+        "javascript",
+        "indexeddb",
+        "localstorage",
+        "offline",
+        "storage",
+        "websql",
+        "xhr",
+        "etag",
+        "cache"
+    ]
+}
