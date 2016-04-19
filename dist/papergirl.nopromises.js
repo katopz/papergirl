@@ -1,6 +1,6 @@
 /*!
     Papergirl -- XHR+ETAG
-    Version 0.3.0
+    Version 0.5.0
 */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -151,7 +151,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    // Free some ram.
 	                    self.delloc = function (options) {
 	                        delete options.xhr;
-	                        delete options.responseText;
+	                        delete options.data;
 	                    };
 
 	                    switch (xhr.status) {
@@ -163,35 +163,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            var etag;
 	                            try {
 	                                etag = options.etag = xhr.getResponseHeader('etag') || null;
-	                            } catch (e) {
-	                                console.log(e);
+	                            } catch (error) {
+	                                console.log(error);
 	                            }
 
 	                            self.setData(url, responseText, etag).then(function (data) {
-	                                // Insert or Update?
-	                                var isUpsert = false;
-	                                if (options.responseText === null || typeof options.responseText === 'undefined') {
+	                                // Has cached?
+	                                if (options.data === null || typeof options.data === 'undefined') {
 	                                    // Insert : no cached data
 	                                    self._hook(options, 'insert', [data, url, options]);
 
 	                                    // Will hook upsert
-	                                    isUpsert = true;
-	                                } else if (options.responseText.length !== data.length || options.responseText !== data) {
-	                                    // Update : cached size not equal new data size || cached data not equal new data
-	                                    self._hook(options, 'update', [data, url, options]);
-
-	                                    // Will hook upsert
-	                                    isUpsert = true;
-	                                }
-
-	                                // Upsert? : Insert or Update
-	                                if (isUpsert) {
-	                                    // Dirty.
 	                                    self._hook(options, 'upsert', [data, url, options]);
 	                                } else {
-	                                    // No upsert.
-	                                    self._hook(options, 'match', [data, url, options]);
+	                                    // Cached, but equal?
+	                                    if (options.data.length !== data.length || options.data !== data) {
+	                                        // Update : cached size not equal new data size || cached data not equal new data
+	                                        self._hook(options, 'update', [data, url, options]);
+
+	                                        // Will hook upsert
+	                                        self._hook(options, 'upsert', [data, url, options]);
+	                                    } else {
+	                                        // Local cached === Remote
+	                                        self._hook(options, 'match', [data, url, options]);
+	                                    }
 	                                }
+
+	                                // OK
+	                                self._hook(options, 'sync', [data, url, options]);
 
 	                                // Free some ram.
 	                                self.delloc(options);
@@ -203,12 +202,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            break;
 	                        case 304:
 	                            // No update, will use data in local storage.
-	                            if (options.responseText) {
+	                            if (options.data) {
 	                                // Cached data.
-	                                resolve(options.responseText);
+	                                resolve(options.data);
 
-	                                // Hook no modify
-	                                self._hook(options, 'not_mod', [options.responseText, url, options]);
+	                                // Hook not modify
+	                                self._hook(options, 'not_mod', [options.data, url, options]);
 
 	                                // Free some ram.
 	                                self.delloc(options);
@@ -235,8 +234,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                };
 
 	                // Handle network errors.
-	                xhr.onerror = function (error) {
-	                    reject(new Error('Network Error. : ' + error));
+	                xhr.onerror = function (e) {
+	                    reject(new Error('Request Error : ' + e.target.status));
 	                };
 
 	                // Hook beforeSend state.
@@ -266,11 +265,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // Options?
 	            options = options || {};
 
-	            /// console.log('+options.strategy:' + options.strategy);
 	            // networkFirst
 	            options.strategy = options.strategy || this.cacheFirst;
-
-	            /// console.log('-options.strategy:' + options.strategy);
 
 	            // Remote only
 	            if (options.strategy === this.networkOnly) {
@@ -302,7 +298,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                // Temporary inject : Use for speed look up overhead.
 	                var data = item ? item[0] : null;
 	                var etag = item ? item[1] : null;
-	                options.responseText = data;
+	                options.data = data;
 	                options.etag = etag;
 
 	                // Rarely use, cache or die.
@@ -403,8 +399,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this;
 	        };
 
-	        F.prototype.onRemote = function onRemote(func) {
-	            this._onRemote = func;
+	        F.prototype.onInsert = function onInsert(func) {
+	            this._onInsert = func;
+	            return this;
+	        };
+
+	        F.prototype.onUpdate = function onUpdate(func) {
+	            this._onUpdate = func;
+	            return this;
+	        };
+
+	        F.prototype.onUpsert = function onUpsert(func) {
+	            this._onUpsert = func;
+	            return this;
+	        };
+
+	        F.prototype.onSync = function onSync(func) {
+	            this._onSync = func;
 	            return this;
 	        };
 
@@ -418,9 +429,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	            options.strategy = this.cacheFirst;
 
 	            options.cache = this._onCache;
-	            options.upsert = this._onRemote;
+	            options.insert = this._onInsert;
+	            options.update = this._onUpdate;
+	            options.upsert = this._onUpsert;
+	            options.sync = this._onSync;
+
+	            // Auto use local uri if has it in localhost origin.
+	            if (location.hostname === 'localhost' && this._local_uri) {
+	                url = this._local_uri;
+	            }
 
 	            this.parent.getCacheFirst(url, options).then(this.delloc)["catch"](this._onError);
+	            return this;
+	        };
+
+	        F.prototype.local = function local(uri) {
+	            this._local_uri = uri;
 	            return this;
 	        };
 
@@ -428,7 +452,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            delete this.parent;
 	            delete this.me;
 	            delete this._onCache;
-	            delete this._onRemote;
+	            delete this._onInsert;
+	            delete this._onUpdate;
+	            delete this._onUpsert;
+	            delete this._onSync;
 	            delete this._onError;
 	        };
 

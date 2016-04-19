@@ -1,14 +1,14 @@
 import localforage from 'localforage';
 
-var papergirl = (function(globalObject) {
+const papergirl = (function(globalObject) {
     'use strict';
 
-    var GLOBAL_NAMESPACE = 'papergirl';
-    var _S_ = '|';
-    var _NS_ = GLOBAL_NAMESPACE + _S_;
-    var version = '1.0.0';
+    const GLOBAL_NAMESPACE = 'papergirl';
+    const _S_ = '|';
+    const _NS_ = GLOBAL_NAMESPACE + _S_;
+    const version = '1.0.0';
 
-    var _window = (function(window) {
+    const _window = (function(window) {
         return window;
     })(globalObject);
 
@@ -37,7 +37,7 @@ var papergirl = (function(globalObject) {
         }
 
         ready(callback) {
-            var promise = new Promise(function(resolve, reject) {
+            const promise = new Promise(function(resolve, reject) {
                 if (!_window) {
                     reject(new Error('Something wrong.'));
                 } else {
@@ -56,7 +56,7 @@ var papergirl = (function(globalObject) {
         // Methods -----------------------------------------------------------------------------------------------
 
         _request(url, options) {
-            var self = this;
+            const self = this;
 
             // Options?
             options = options || {};
@@ -64,7 +64,7 @@ var papergirl = (function(globalObject) {
             // Return a new promise.
             return new Promise(function(resolve, reject) {
                 // Do the usual XHR stuff
-                var xhr = options.xhr = XMLHttpRequest ? new XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP');
+                const xhr = options.xhr = XMLHttpRequest ? new XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP');
 
                 xhr.open('GET', url);
 
@@ -80,47 +80,46 @@ var papergirl = (function(globalObject) {
                     // Free some ram.
                     self.delloc = function(options) {
                         delete options.xhr;
-                        delete options.responseText;
+                        delete options.data;
                     };
 
                     switch (xhr.status) {
                         case 200:
                             // For faster reponse.
-                            var responseText = xhr.responseText || null;
+                            const responseText = xhr.responseText || null;
 
                             // Set data with etag.
                             var etag;
                             try {
                                 etag = options.etag = xhr.getResponseHeader('etag') || null;
-                            } catch (e) {
-                                console.log(e);
+                            } catch (error) {
+                                console.log(error);
                             }
 
                             self.setData(url, responseText, etag).then(function(data) {
-                                // Insert or Update?
-                                var isUpsert = false;
-                                if (options.responseText === null || typeof (options.responseText) === 'undefined') {
+                                // Has cached?
+                                if (options.data === null || typeof (options.data) === 'undefined') {
                                     // Insert : no cached data
                                     self._hook(options, 'insert', [data, url, options]);
 
                                     // Will hook upsert
-                                    isUpsert = true;
-                                } else if ((options.responseText.length !== data.length) || (options.responseText !== data)) {
-                                    // Update : cached size not equal new data size || cached data not equal new data 
-                                    self._hook(options, 'update', [data, url, options]);
-
-                                    // Will hook upsert
-                                    isUpsert = true;
-                                }
-
-                                // Upsert? : Insert or Update
-                                if (isUpsert) {
-                                    // Dirty.
                                     self._hook(options, 'upsert', [data, url, options]);
                                 } else {
-                                    // No upsert.
-                                    self._hook(options, 'match', [data, url, options]);
+                                    // Cached, but equal?
+                                    if ((options.data.length !== data.length) || (options.data !== data)) {
+                                        // Update : cached size not equal new data size || cached data not equal new data 
+                                        self._hook(options, 'update', [data, url, options]);
+
+                                        // Will hook upsert
+                                        self._hook(options, 'upsert', [data, url, options]);
+                                    } else {
+                                        // Local cached === Remote
+                                        self._hook(options, 'match', [data, url, options]);
+                                    }
                                 }
+
+                                // OK
+                                self._hook(options, 'sync', [data, url, options]);
 
                                 // Free some ram.
                                 self.delloc(options);
@@ -132,12 +131,12 @@ var papergirl = (function(globalObject) {
                             break;
                         case 304:
                             // No update, will use data in local storage.
-                            if (options.responseText) {
+                            if (options.data) {
                                 // Cached data.
-                                resolve(options.responseText);
+                                resolve(options.data);
 
-                                // Hook no modify
-                                self._hook(options, 'not_mod', [options.responseText, url, options]);
+                                // Hook not modify
+                                self._hook(options, 'not_mod', [options.data, url, options]);
 
                                 // Free some ram.
                                 self.delloc(options);
@@ -164,8 +163,8 @@ var papergirl = (function(globalObject) {
                 };
 
                 // Handle network errors.
-                xhr.onerror = function(error) {
-                    reject(new Error('Network Error. : ' + error));
+                xhr.onerror = function(e) {
+                    reject(new Error('Request Error : ' + e.target.status));
                 };
 
                 // Hook beforeSend state.
@@ -190,16 +189,13 @@ var papergirl = (function(globalObject) {
         // Expected : options.strategy as papergirl.cacheFirst, papergirl.networkFirst, papergirl.cacheOnly, papergirl.networkOnly
 
         request(url, options) {
-            var self = this;
+            const self = this;
 
             // Options?
             options = options || {};
 
-            /// console.log('+options.strategy:' + options.strategy);
             // networkFirst
             options.strategy = options.strategy || this.cacheFirst;
-
-            /// console.log('-options.strategy:' + options.strategy);
 
             // Remote only
             if (options.strategy === this.networkOnly) {
@@ -229,9 +225,9 @@ var papergirl = (function(globalObject) {
             return self.storage.getItem(_NS_ + url).then(function(item) {
 
                 // Temporary inject : Use for speed look up overhead.
-                var data = item ? item[0] : null;
-                var etag = item ? item[1] : null;
-                options.responseText = data;
+                const data = item ? item[0] : null;
+                const etag = item ? item[1] : null;
+                options.data = data;
                 options.etag = etag;
 
                 // Rarely use, cache or die.
@@ -278,7 +274,7 @@ var papergirl = (function(globalObject) {
         }
 
         clear() {
-            var self = this;
+            const self = this;
             return this.storage.iterate(function(value, key) {
                 // TODO : Chain promise here?, Devare by storeName?
                 if (key.indexOf(_NS_) === 0) {
@@ -305,7 +301,7 @@ var papergirl = (function(globalObject) {
 
         watch(me) {
             // TODO : unique, timeout
-            var _me = me || {};
+            const _me = me || {};
             return new F(this, _me);
         }
     }
@@ -323,11 +319,26 @@ var papergirl = (function(globalObject) {
             return this;
         }
 
-        onRemote(func) {
-            this._onRemote = func;
+        onInsert(func) {
+            this._onInsert = func;
             return this;
         }
 
+        onUpdate(func) {
+            this._onUpdate = func;
+            return this;
+        }
+
+        onUpsert(func) {
+            this._onUpsert = func;
+            return this;
+        }
+
+        onSync(func) {
+            this._onSync = func;
+            return this;
+        }
+        
         onError(func) {
             this._onError = func;
             return this;
@@ -338,9 +349,22 @@ var papergirl = (function(globalObject) {
             options.strategy = this.cacheFirst;
 
             options.cache = this._onCache;
-            options.upsert = this._onRemote;
+            options.insert = this._onInsert;
+            options.update = this._onUpdate;
+            options.upsert = this._onUpsert;
+            options.sync = this._onSync;
+
+            // Auto use local uri if has it in localhost origin.
+            if (location.hostname === 'localhost' && this._local_uri) {
+                url = this._local_uri;
+            }
 
             this.parent.getCacheFirst(url, options).then(this.delloc).catch(this._onError);
+            return this;
+        }
+
+        local(uri) {
+            this._local_uri = uri;
             return this;
         }
 
@@ -348,7 +372,10 @@ var papergirl = (function(globalObject) {
             delete this.parent;
             delete this.me;
             delete this._onCache;
-            delete this._onRemote;
+            delete this._onInsert;
+            delete this._onUpdate;
+            delete this._onUpsert;
+            delete this._onSync;
             delete this._onError;
         }
     }

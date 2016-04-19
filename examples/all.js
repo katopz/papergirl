@@ -5,6 +5,7 @@ var timeuse_cache_remote;
 
 // Will get from cached first if has and then localhost after that.
 papergirl.getCacheFirst('foo.json', {
+    // Occur when got cached data.
     'cache': function(data) {
         timeuse_cache_local = new Date().valueOf() - beg_local;
 
@@ -19,7 +20,7 @@ papergirl.getCacheFirst('foo.json', {
     'onload': function(xhr) {
         console.log(xhr);
     },
-    // Never cache before from remote.
+    // Occur when never cache before and get insert from remote.
     'insert': function(xhr) {
         console.log('insert');
     },
@@ -31,9 +32,13 @@ papergirl.getCacheFirst('foo.json', {
     'upsert': function(xhr) {
         console.log('upsert');
     },
-    // Cache is match with remote by content.
+    // Cache data is match with remote data.
     'match': function(xhr) {
         console.log('match');
+    },
+    // Occur when cache is done.
+    'sync': function(xhr) {
+        console.log('sync');
     },
     // Cache is match with remote by ETag.
     'not_mod': function(xhr) {

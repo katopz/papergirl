@@ -29,39 +29,88 @@ describe('Papergirl', function() {
         papergirl.clear().then(done);
     });
 
-    // Methods inherit from localforage -----------------------------------------------------------------------------------------------
+    // Public Methods -----------------------------------------------------------------------------------------------
 
-    it('can set item via localForage [promise]', function(done) {
-        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+    it('can detect localhost origin and fallback to local uri if provide [callback]', function(done) {
+        papergirl.watch()
+            .onUpsert(function(data) {
+                // And then we got update from localhost.
+                assert(expect(data).to.be(mock.BAR_DATA));
+                // Do update view with new data.
+                done();
+            })
+            .local(mock.BAR_URL)
+            .request(mock.FOO_URL);
+    });
+
+    it('can get sync event when remote and cached method is completed [callback]', function(done) {
+        papergirl.watch().onSync(function(data) {
             assert(expect(data).to.be(mock.FOO_DATA));
             done();
-        });
+        }).request(mock.FOO_URL);
     });
 
-    it('can get existng item via localForage [promise]', function(done) {
-        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
-            assert(expect(data).to.be(mock.FOO_DATA));
-            papergirl.getData(mock.FOO_URL).then(function(data) {
-                assert(expect(data).to.be(mock.FOO_DATA));
-                done();
-            });
-        });
-    });
+    it('can use cached data first and remote later if content is different from cached [callback]', function(done) {
+        var isLoadFromCache = false;
 
-    it('can remove existng item via localForage [promise]', function(done) {
-        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
-            assert(expect(data).to.be(mock.FOO_DATA));
-            papergirl.getData(mock.FOO_URL).then(function(data) {
-                assert(expect(data).to.be(mock.FOO_DATA));
-                papergirl.removeData(mock.FOO_URL).then(function(data) {
-                    assert(expect(data).to.not.be.ok);
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.BAR_DATA));
+
+            papergirl.watch()
+                .onCache(function(data) {
+                    // Cache is faster so this will call first if has.
+                    assert(expect(data).to.be(mock.BAR_DATA));
+                    // Do serve data to view and wait for remote. 
+                    isLoadFromCache = true;
+                })
+                .onUpsert(function(data) {
+                    // And then we got insert or update from remote.
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    // Also cache shoud triggered.
+                    expect(isLoadFromCache).to.be(true);
+                    // Do update view with new data.
                     done();
-                });
-            });
+                })
+                .onError(function(error) {
+                    // This should not be call.
+                    throw new Error('This shouldn\'t be call : ' + error);
+                })
+                .request(mock.FOO_URL);
         });
     });
 
-    // Private Methods -----------------------------------------------------------------------------------------------
+    it('can watch for upsert event from remote if content is different from cached [callback]', function(done) {
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.BAR_DATA));
+
+            // Watch for remote update.
+            papergirl.watch().onUpsert(function(data) {
+                // And then we got insert or update from remote.
+                assert(expect(data).to.be(mock.FOO_DATA));
+                // Do update view with new data.
+                done();
+            }).request(mock.FOO_URL);
+        });
+    });
+
+    it('can use cached data. [callback]', function(done) {
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.BAR_DATA));
+
+            // Watch for cache exist.
+            papergirl.watch().onCache(function(data) {
+                // Cache is faster so this will call first.
+                assert(expect(data).to.be(mock.BAR_DATA));
+                // Do serve data to view and wait for remote. 
+                done();
+            }).request(mock.FOO_URL);
+        });
+    });
+
+    // Advance Methods -----------------------------------------------------------------------------------------------
 
     it('can request a response from remote [promise]', function(done) {
         papergirl.request(mock.FOO_URL).then(function(data) {
@@ -187,6 +236,55 @@ describe('Papergirl', function() {
         });
     });
 
+    // Methods inherit from localforage -----------------------------------------------------------------------------------------------
+
+    it('can watch for 404 error [callback]', function(done) {
+        papergirl.watch().onError(function(error) {
+            assert(expect(error).to.be.an(Error));
+            done();
+        }).request('404.json');
+    });
+
+    it('can watch for 500 error [callback]', function(done) {
+        this.timeout(6000);
+        papergirl.watch().onError(function(error) {
+            assert(expect(error).to.be.an(Error));
+            done();
+        }).request('https://localhost/404.json');
+    });
+
+    it('can set item via localForage [promise]', function(done) {
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            done();
+        });
+    });
+
+    it('can get existng item via localForage [promise]', function(done) {
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            papergirl.getData(mock.FOO_URL).then(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                done();
+            });
+        });
+    });
+
+    it('can remove existng item via localForage [promise]', function(done) {
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            papergirl.getData(mock.FOO_URL).then(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                papergirl.removeData(mock.FOO_URL).then(function(data) {
+                    assert(expect(data).to.not.be.ok);
+                    done();
+                });
+            });
+        });
+    });
+
+    // -TOTEST-
+
     /* Test failed via phantomjs but working via real browser
     it('will get `not_mod` call when use etag and cached data [promise]', function(done) {
         var not_mod = function(data) {
@@ -207,79 +305,4 @@ describe('Papergirl', function() {
         });
     });
     */
-
-    // Public Methods -----------------------------------------------------------------------------------------------
-
-    it('can watch for update data from remote if content is different from cached [callback]', function(done) {
-        // Simulated old content as BAR
-        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
-            assert(expect(data).to.be(mock.BAR_DATA));
-
-            // Watch for remote update.
-            papergirl.watch().onRemote(function(data) {
-                // And then we got update from remote.
-                assert(expect(data).to.be(mock.FOO_DATA));
-                // Do update view with new data.
-                done();
-            }).request(mock.FOO_URL);
-        });
-    });
-
-    it('can request from cached first. [callback]', function(done) {
-        // Simulated old content as BAR
-        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
-            assert(expect(data).to.be(mock.BAR_DATA));
-
-            // Watch for cache exist.
-            papergirl.watch().onCache(function(data) {
-                // Cache is faster so this will call first.
-                assert(expect(data).to.be(mock.BAR_DATA));
-                // Do serve data to view and wait for remote. 
-                done();
-            }).request(mock.FOO_URL);
-        });
-    });
-
-    it('can request from cached first and remote later if content is different from cached [callback]', function(done) {
-        var isLoadFromCache = false;
-
-        // Simulated old content as BAR
-        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
-            assert(expect(data).to.be(mock.BAR_DATA));
-
-            papergirl.watch()
-                .onCache(function(data) {
-                    // Cache is faster so this will call first.
-                    assert(expect(data).to.be(mock.BAR_DATA));
-                    // Do serve data to view and wait for remote. 
-                    isLoadFromCache = true;
-                })
-                .onRemote(function(data) {
-                    // And then we got update from remote.
-                    assert(expect(data).to.be(mock.FOO_DATA));
-                    // Also cache shoud triggered.
-                    expect(isLoadFromCache).to.be(true);
-                    // Do update view with new data.
-                    done();
-                })
-                .onError(function(error) {
-                    // This should not be call.
-                    throw new Error('This shouldn\'t be call : ' + error);
-                })
-                .request(mock.FOO_URL);
-        });
-    });
-
-    // -TOTEST-
-    // cacheOnly
-    // networkOnly
-    // catch
-    // remote
-    // xhr.responseTextType = 'json'
-    // multi store
-    // ready
-    // ignore query when cache
-    // offlineFirst
-    // onload
-    // max-age
 });
