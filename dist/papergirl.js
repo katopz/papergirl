@@ -883,8 +883,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                // Hook no modify
 	                                self._hook(options, 'not_mod', [options.responseText, url, options]);
 	                            } else {
-	                                // Clear ETAG by set as null.
-	                                self.storage.setItem(url, options.responseText);
+	                                // Clear invalid data.
+	                                self.storage.removeData(url);
 
 	                                // Retry without etag, should get 200.
 	                                self._request(url);

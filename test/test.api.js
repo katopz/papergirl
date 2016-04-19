@@ -22,7 +22,7 @@ describe('Papergirl', function() {
     var FOO_DATA = '{ "foo": "HelloWorld" }';
 
     //var BAR_URL = '/test/bar.json';
-    //var BAR_DATA = '{ "bar": "HelloWorld" }';
+    var BAR_DATA = '{ "bar": "HelloWorld" }';
 
     beforeEach(function(done) {
         papergirl.clear().then(done);
@@ -209,20 +209,27 @@ describe('Papergirl', function() {
 
     // Public Methods -----------------------------------------------------------------------------------------------
 
-    it('can request from cache first and update later when use cached [callback]', function(done) {
+    it('can request from cached first and remote later if content is different from cached [callback]', function(done) {
         var isLoadFromCache = false;
-        papergirl.setData(FOO_URL, FOO_DATA).then(function(data) {
+        
+        var dirty = function(data) {
+            // And then we got update from remote.
             assert(expect(data).to.be(FOO_DATA));
+            // Also cache shoud triggered.
+            expect(isLoadFromCache).to.be(true);
+            done();
+        };
+        
+        // Simulated old content as BAR
+        papergirl.setData(FOO_URL, BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(BAR_DATA));
 
             papergirl.getCacheFirst(FOO_URL, function(data) {
                 // Cache is faster so this will call first.
-                assert(expect(data).to.be(FOO_DATA));
+                assert(expect(data).to.be(BAR_DATA));
                 isLoadFromCache = true;
-            }).then(function(data) {
-                // And then we got update from remote.
-                assert(expect(data).to.be(FOO_DATA));
-                expect(isLoadFromCache).to.be(true);
-                done();
+            },{
+                'dirty' : dirty
             });
         });
     });
