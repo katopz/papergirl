@@ -1,6 +1,6 @@
 /*!
     Papergirl -- XHR+ETAG
-    Version 0.2.0
+    Version 0.3.0
 */
 (function() {
 var define, requireModule, require, requirejs;
@@ -811,16 +811,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        Papergirl.prototype._request = function _request(url, options) {
 	            var self = this;
+
+	            // Options?
+	            options = options || {};
+
 	            // Return a new promise.
 	            return new Promise(function (resolve, reject) {
 	                // Do the usual XHR stuff
 	                var xhr = options.xhr = XMLHttpRequest ? new XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP');
+
 	                xhr.open('GET', url);
+
 	                if (options.etag) {
 	                    xhr.setRequestHeader('If-None-Match', options.etag);
 	                }
 
 	                xhr.onload = function () {
+
 	                    // Hook onload state.
 	                    self._hook(options, 'onload', [xhr]);
 
@@ -834,7 +841,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        case 200:
 	                            // For faster reponse.
 	                            var responseText = xhr.responseText || null;
-	                            resolve(responseText);
 
 	                            // Set data with etag.
 	                            var etag;
@@ -864,13 +870,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                // Upsert? : Insert or Update
 	                                if (isUpsert) {
 	                                    // Dirty.
-	                                    self._hook(options, 'dirty', [data, url, options]);
+	                                    self._hook(options, 'upsert', [data, url, options]);
 	                                } else {
-	                                    // No dirty.
+	                                    // No upsert.
 	                                    self._hook(options, 'match', [data, url, options]);
 	                                }
+
 	                                // Free some ram.
 	                                self.delloc(options);
+
+	                                // Done
+	                                resolve(responseText);
 	                            });
 
 	                            break;
@@ -882,16 +892,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                                // Hook no modify
 	                                self._hook(options, 'not_mod', [options.responseText, url, options]);
+
+	                                // Free some ram.
+	                                self.delloc(options);
 	                            } else {
 	                                // Clear invalid data.
 	                                self.storage.removeData(url);
 
+	                                // Free some ram.
+	                                self.delloc(options);
+
 	                                // Retry without etag, should get 200.
-	                                self._request(url);
+	                                self.request(url, options);
 	                            }
 
-	                            // Free some ram.
-	                            self.delloc(options);
 	                            break;
 	                        default:
 	                            // Something wrong
@@ -937,7 +951,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            /// console.log('+options.strategy:' + options.strategy);
 	            // networkFirst
-	            options.strategy = options.strategy || this.networkFirst;
+	            options.strategy = options.strategy || this.cacheFirst;
 
 	            /// console.log('-options.strategy:' + options.strategy);
 
@@ -952,9 +966,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return self._request(url, null, options).then(function (data) {
 	                        // Success.
 	                        resolve(data);
-
-	                        // Hook remote state.
-	                        self._hook(options, 'remote', [data, url, options]);
 	                    })["catch"](function (e) {
 	                        // Fail, try cache.
 	                        self.getData(url).then(function (data) {
@@ -990,7 +1001,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                // Cached first.
 	                if (data && options.strategy === self.cacheFirst) {
-	                    self._hook(options, 'got_cache', [data, url, options]);
+	                    self._hook(options, 'cache', [data, url, options]);
 	                }
 
 	                // Try fetch from remote.
@@ -1027,7 +1038,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        Papergirl.prototype.clear = function clear() {
 	            var self = this;
 	            return this.storage.iterate(function (value, key) {
-	                // TODO : Chain promise here?, Delete by storeName?
+	                // TODO : Chain promise here?, Devare by storeName?
 	                if (key.indexOf(_NS_) === 0) {
 	                    self.storage.removeItem(key);
 	                }
@@ -1040,17 +1051,71 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // Public Methods -----------------------------------------------------------------------------------------------
 
-	        Papergirl.prototype.getCacheFirst = function getCacheFirst(url, got_cache, options) {
+	        // Expected got_catch, upsert via options
+
+
+	        Papergirl.prototype.getCacheFirst = function getCacheFirst(url, options) {
 	            // Cache first.
 	            options = options || {};
 	            options.strategy = this.cacheFirst;
-	            options.got_cache = got_cache;
 
 	            // Then remote.
 	            return this.request(url, options);
 	        };
 
+	        Papergirl.prototype.watch = function watch(me) {
+	            // TODO : unique, timeout
+	            var _me = me || {};
+	            return new F(this, _me);
+	        };
+
 	        return Papergirl;
+	    }();
+
+	    var F = function () {
+	        function F(parent, me) {
+	            _classCallCheck(this, F);
+
+	            this.parent = parent;
+	            this.me = me;
+	        }
+
+	        F.prototype.onCache = function onCache(func) {
+	            this._onCache = func;
+
+	            return this;
+	        };
+
+	        F.prototype.onRemote = function onRemote(func) {
+	            this._onRemote = func;
+	            return this;
+	        };
+
+	        F.prototype.onError = function onError(func) {
+	            this._onError = func;
+	            return this;
+	        };
+
+	        F.prototype.request = function request(url, options) {
+	            options = options || {};
+	            options.strategy = this.cacheFirst;
+
+	            options.cache = this._onCache;
+	            options.upsert = this._onRemote;
+
+	            this.parent.getCacheFirst(url, options).then(this.delloc)["catch"](this._onError);
+	            return this;
+	        };
+
+	        F.prototype.delloc = function delloc() {
+	            delete this.parent;
+	            delete this.me;
+	            delete this._onCache;
+	            delete this._onRemote;
+	            delete this._onError;
+	        };
+
+	        return F;
 	    }();
 
 	    // The actual papergirl object that we expose as a module or via a

@@ -3,10 +3,10 @@ import localforage from 'localforage';
 var papergirl = (function(globalObject) {
     'use strict';
 
-    let GLOBAL_NAMESPACE = 'papergirl';
-    let _S_ = '|';
-    let _NS_ = GLOBAL_NAMESPACE + _S_;
-    let version = '1.0.0';
+    var GLOBAL_NAMESPACE = 'papergirl';
+    var _S_ = '|';
+    var _NS_ = GLOBAL_NAMESPACE + _S_;
+    var version = '1.0.0';
 
     var _window = (function(window) {
         return window;
@@ -56,17 +56,24 @@ var papergirl = (function(globalObject) {
         // Methods -----------------------------------------------------------------------------------------------
 
         _request(url, options) {
-            let self = this;
+            var self = this;
+
+            // Options?
+            options = options || {};
+
             // Return a new promise.
             return new Promise(function(resolve, reject) {
                 // Do the usual XHR stuff
-                let xhr = options.xhr = XMLHttpRequest ? new XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP');
+                var xhr = options.xhr = XMLHttpRequest ? new XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP');
+
                 xhr.open('GET', url);
+
                 if (options.etag) {
                     xhr.setRequestHeader('If-None-Match', options.etag);
                 }
 
                 xhr.onload = function() {
+
                     // Hook onload state.
                     self._hook(options, 'onload', [xhr]);
 
@@ -79,8 +86,7 @@ var papergirl = (function(globalObject) {
                     switch (xhr.status) {
                         case 200:
                             // For faster reponse.
-                            const responseText = xhr.responseText || null;
-                            resolve(responseText);
+                            var responseText = xhr.responseText || null;
 
                             // Set data with etag.
                             var etag;
@@ -110,13 +116,17 @@ var papergirl = (function(globalObject) {
                                 // Upsert? : Insert or Update
                                 if (isUpsert) {
                                     // Dirty.
-                                    self._hook(options, 'dirty', [data, url, options]);
+                                    self._hook(options, 'upsert', [data, url, options]);
                                 } else {
-                                    // No dirty.
+                                    // No upsert.
                                     self._hook(options, 'match', [data, url, options]);
                                 }
+
                                 // Free some ram.
                                 self.delloc(options);
+
+                                // Done
+                                resolve(responseText);
                             });
 
                             break;
@@ -128,16 +138,20 @@ var papergirl = (function(globalObject) {
 
                                 // Hook no modify
                                 self._hook(options, 'not_mod', [options.responseText, url, options]);
+
+                                // Free some ram.
+                                self.delloc(options);
                             } else {
                                 // Clear invalid data.
                                 self.storage.removeData(url);
 
+                                // Free some ram.
+                                self.delloc(options);
+
                                 // Retry without etag, should get 200.
-                                self._request(url);
+                                self.request(url, options);
                             }
 
-                            // Free some ram.
-                            self.delloc(options);
                             break;
                         default:
                             // Something wrong
@@ -176,14 +190,14 @@ var papergirl = (function(globalObject) {
         // Expected : options.strategy as papergirl.cacheFirst, papergirl.networkFirst, papergirl.cacheOnly, papergirl.networkOnly
 
         request(url, options) {
-            let self = this;
+            var self = this;
 
             // Options?
             options = options || {};
 
             /// console.log('+options.strategy:' + options.strategy);
             // networkFirst
-            options.strategy = options.strategy || this.networkFirst;
+            options.strategy = options.strategy || this.cacheFirst;
 
             /// console.log('-options.strategy:' + options.strategy);
 
@@ -198,9 +212,6 @@ var papergirl = (function(globalObject) {
                     return self._request(url, null, options).then(function(data) {
                         // Success.
                         resolve(data);
-
-                        // Hook remote state.
-                        self._hook(options, 'remote', [data, url, options]);
                     }).catch(function(e) {
                         // Fail, try cache.
                         self.getData(url).then(function(data) {
@@ -236,7 +247,7 @@ var papergirl = (function(globalObject) {
 
                 // Cached first.
                 if (data && options.strategy === self.cacheFirst) {
-                    self._hook(options, 'got_cache', [data, url, options]);
+                    self._hook(options, 'cache', [data, url, options]);
                 }
 
                 // Try fetch from remote.
@@ -267,9 +278,9 @@ var papergirl = (function(globalObject) {
         }
 
         clear() {
-            let self = this;
+            var self = this;
             return this.storage.iterate(function(value, key) {
-                // TODO : Chain promise here?, Delete by storeName?
+                // TODO : Chain promise here?, Devare by storeName?
                 if (key.indexOf(_NS_) === 0) {
                     self.storage.removeItem(key);
                 }
@@ -282,14 +293,63 @@ var papergirl = (function(globalObject) {
 
         // Public Methods -----------------------------------------------------------------------------------------------
 
-        getCacheFirst(url, got_cache, options) {
+        // Expected got_catch, upsert via options
+        getCacheFirst(url, options) {
             // Cache first.
             options = options || {};
             options.strategy = this.cacheFirst;
-            options.got_cache = got_cache;
 
             // Then remote.
             return this.request(url, options);
+        }
+
+        watch(me) {
+            // TODO : unique, timeout
+            var _me = me || {};
+            return new F(this, _me);
+        }
+    }
+
+    class F {
+
+        constructor(parent, me) {
+            this.parent = parent;
+            this.me = me;
+        }
+
+        onCache(func) {
+            this._onCache = func;
+
+            return this;
+        }
+
+        onRemote(func) {
+            this._onRemote = func;
+            return this;
+        }
+
+        onError(func) {
+            this._onError = func;
+            return this;
+        }
+
+        request(url, options) {
+            options = options || {};
+            options.strategy = this.cacheFirst;
+
+            options.cache = this._onCache;
+            options.upsert = this._onRemote;
+
+            this.parent.getCacheFirst(url, options).then(this.delloc).catch(this._onError);
+            return this;
+        }
+
+        delloc() {
+            delete this.parent;
+            delete this.me;
+            delete this._onCache;
+            delete this._onRemote;
+            delete this._onError;
         }
     }
 

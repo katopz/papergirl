@@ -18,11 +18,12 @@ describe('Papergirl API', function() {
 
 describe('Papergirl', function() {
 
-    var FOO_URL = '/test/foo.json';
-    var FOO_DATA = '{ "foo": "HelloWorld" }';
+    var mock = {};
+    mock.FOO_URL = '/test/foo.json';
+    mock.FOO_DATA = '{ "foo": "HelloWorld" }';
 
-    //var BAR_URL = '/test/bar.json';
-    var BAR_DATA = '{ "bar": "HelloWorld" }';
+    mock.BAR_URL = '/test/bar.json';
+    mock.BAR_DATA = '{ "bar": "HelloWorld" }';
 
     beforeEach(function(done) {
         papergirl.clear().then(done);
@@ -31,28 +32,28 @@ describe('Papergirl', function() {
     // Methods inherit from localforage -----------------------------------------------------------------------------------------------
 
     it('can set item via localForage [promise]', function(done) {
-        papergirl.setData(FOO_URL, FOO_DATA).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
             done();
         });
     });
 
     it('can get existng item via localForage [promise]', function(done) {
-        papergirl.setData(FOO_URL, FOO_DATA).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
-            papergirl.getData(FOO_URL).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            papergirl.getData(mock.FOO_URL).then(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
                 done();
             });
         });
     });
 
     it('can remove existng item via localForage [promise]', function(done) {
-        papergirl.setData(FOO_URL, FOO_DATA).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
-            papergirl.getData(FOO_URL).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
-                papergirl.removeData(FOO_URL).then(function(data) {
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            papergirl.getData(mock.FOO_URL).then(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                papergirl.removeData(mock.FOO_URL).then(function(data) {
                     assert(expect(data).to.not.be.ok);
                     done();
                 });
@@ -63,28 +64,28 @@ describe('Papergirl', function() {
     // Private Methods -----------------------------------------------------------------------------------------------
 
     it('can request a response from remote [promise]', function(done) {
-        papergirl.getCacheFirst(FOO_URL).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
+        papergirl.request(mock.FOO_URL).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
             done();
         });
     });
 
     it('can get cached response from localForage after cached [promise]', function(done) {
-        papergirl.getCacheFirst(FOO_URL).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
-            papergirl.getData(FOO_URL).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
+        papergirl.request(mock.FOO_URL).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            papergirl.getData(mock.FOO_URL).then(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
                 done();
             });
         });
     });
 
     it('can remove cached response from localForage after cached [promise]', function(done) {
-        papergirl.getCacheFirst(FOO_URL).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
-            papergirl.getData(FOO_URL).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
-                papergirl.removeData(FOO_URL).then(function(data) {
+        papergirl.request(mock.FOO_URL).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            papergirl.getData(mock.FOO_URL).then(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                papergirl.removeData(mock.FOO_URL).then(function(data) {
                     assert(expect(data).to.not.be.ok);
                     done();
                 });
@@ -95,17 +96,17 @@ describe('Papergirl', function() {
     it('will get `insert` call when no cached data [promise]', function(done) {
 
         var insert = function(data) {
-            assert(expect(data).to.be(FOO_DATA));
+            assert(expect(data).to.be(mock.FOO_DATA));
             done();
         };
 
-        papergirl.removeData(FOO_URL).then(function(data) {
+        papergirl.removeData(mock.FOO_URL).then(function(data) {
             assert(expect(data).to.not.be.ok);
-            papergirl.request(FOO_URL, {
+            papergirl.request(mock.FOO_URL, {
                 'strategy': papergirl.cacheFirst,
                 'insert': insert
             }).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
+                assert(expect(data).to.be(mock.FOO_DATA));
             });
         });
     });
@@ -117,32 +118,32 @@ describe('Papergirl', function() {
             throw new Error('This shouldn\'t be call');
         };
 
-        papergirl.setData(FOO_URL, FOO_DATA).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
-            papergirl.request(FOO_URL, {
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            papergirl.request(mock.FOO_URL, {
                 'strategy': papergirl.cacheFirst,
                 'update': update
             }).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
+                assert(expect(data).to.be(mock.FOO_DATA));
                 done();
             });
         });
     });
 
-    it('will get `dirty` call when no cached data [promise]', function(done) {
+    it('will get `upsert` call when no cached data [promise]', function(done) {
 
-        var dirty = function(data) {
-            assert(expect(data).to.be(FOO_DATA));
+        var upsert = function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
             done();
         };
 
-        papergirl.removeData(FOO_URL).then(function(data) {
+        papergirl.removeData(mock.FOO_URL).then(function(data) {
             assert(expect(data).to.not.be.ok);
-            papergirl.request(FOO_URL, {
+            papergirl.request(mock.FOO_URL, {
                 'strategy': papergirl.cacheFirst,
-                'dirty': dirty
+                'upsert': upsert
             }).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
+                assert(expect(data).to.be(mock.FOO_DATA));
             });
         });
     });
@@ -150,25 +151,25 @@ describe('Papergirl', function() {
     it('will get `match` call when use cached data [promise]', function(done) {
 
         var match = function(data) {
-            assert(expect(data).to.be(FOO_DATA));
+            assert(expect(data).to.be(mock.FOO_DATA));
             done();
         };
 
-        papergirl.setData(FOO_URL, FOO_DATA).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
-            papergirl.request(FOO_URL, {
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            papergirl.request(mock.FOO_URL, {
                 'strategy': papergirl.cacheFirst,
                 'match': match
             }).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
+                assert(expect(data).to.be(mock.FOO_DATA));
             });
         });
     });
 
     it('can get `etag` if has [promise]', function(done) {
         // etag will set after local events fire.
-        var dirty = function(data, url, options) {
-            assert(expect(data).to.be(FOO_DATA));
+        var upsert = function(data, url, options) {
+            assert(expect(data).to.be(mock.FOO_DATA));
             papergirl.getETAG(url).then(function(etag) {
                 assert(expect(etag).to.be(options.etag));
                 done();
@@ -178,30 +179,30 @@ describe('Papergirl', function() {
         // Retain etag
         var options = {
             'strategy': papergirl.cacheFirst,
-            'dirty': dirty
+            'upsert': upsert
         };
 
-        papergirl.request(FOO_URL, options).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
+        papergirl.request(mock.FOO_URL, options).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
         });
     });
 
     /* Test failed via phantomjs but working via real browser
     it('will get `not_mod` call when use etag and cached data [promise]', function(done) {
         var not_mod = function(data) {
-            if (url === FOO_URL) {
-                assert(expect(data).to.be(FOO_DATA));
+            if (url === mock.FOO_URL) {
+                assert(expect(data).to.be(mock.FOO_DATA));
                 done();
             }
         };
         
-        papergirl.request(FOO_URL).then(function(data) {
-            assert(expect(data).to.be(FOO_DATA));
+        papergirl.request(mock.FOO_URL).then(function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
             
-            papergirl.request(FOO_URL, {
+            papergirl.request(mock.FOO_URL, {
                 'not_mod': not_mod
             }).then(function(data) {
-                assert(expect(data).to.be(FOO_DATA));
+                assert(expect(data).to.be(mock.FOO_DATA));
             });
         });
     });
@@ -209,28 +210,63 @@ describe('Papergirl', function() {
 
     // Public Methods -----------------------------------------------------------------------------------------------
 
+    it('can watch for update data from remote if content is different from cached [callback]', function(done) {
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.BAR_DATA));
+
+            // Watch for remote update.
+            papergirl.watch().onRemote(function(data) {
+                // And then we got update from remote.
+                assert(expect(data).to.be(mock.FOO_DATA));
+                // Do update view with new data.
+                done();
+            }).request(mock.FOO_URL);
+        });
+    });
+
+    it('can request from cached first. [callback]', function(done) {
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.BAR_DATA));
+
+            // Watch for cache exist.
+            papergirl.watch().onCache(function(data) {
+                // Cache is faster so this will call first.
+                assert(expect(data).to.be(mock.BAR_DATA));
+                // Do serve data to view and wait for remote. 
+                done();
+            }).request(mock.FOO_URL);
+        });
+    });
+
     it('can request from cached first and remote later if content is different from cached [callback]', function(done) {
         var isLoadFromCache = false;
-        
-        var dirty = function(data) {
-            // And then we got update from remote.
-            assert(expect(data).to.be(FOO_DATA));
-            // Also cache shoud triggered.
-            expect(isLoadFromCache).to.be(true);
-            done();
-        };
-        
-        // Simulated old content as BAR
-        papergirl.setData(FOO_URL, BAR_DATA).then(function(data) {
-            assert(expect(data).to.be(BAR_DATA));
 
-            papergirl.getCacheFirst(FOO_URL, function(data) {
-                // Cache is faster so this will call first.
-                assert(expect(data).to.be(BAR_DATA));
-                isLoadFromCache = true;
-            },{
-                'dirty' : dirty
-            });
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.BAR_DATA));
+
+            papergirl.watch()
+                .onCache(function(data) {
+                    // Cache is faster so this will call first.
+                    assert(expect(data).to.be(mock.BAR_DATA));
+                    // Do serve data to view and wait for remote. 
+                    isLoadFromCache = true;
+                })
+                .onRemote(function(data) {
+                    // And then we got update from remote.
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    // Also cache shoud triggered.
+                    expect(isLoadFromCache).to.be(true);
+                    // Do update view with new data.
+                    done();
+                })
+                .onError(function(error) {
+                    // This should not be call.
+                    throw new Error('This shouldn\'t be call : ' + error);
+                })
+                .request(mock.FOO_URL);
         });
     });
 
