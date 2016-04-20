@@ -8,9 +8,9 @@
     <div id="my-text"></div>
 
     <script src="/dist/papergirl.js"></script>
-    <script>papergirl.setItem('my cool key',
+    <script>papergirl.setData('my cool key',
                                 'I have been set').then(function() {
-        papergirl.getItem('my cool key').then(function(value) {
+        papergirl.getData('my cool key').then(function(value) {
             document.getElementById('my-text').innerHTML = value;
         });
     });</script>

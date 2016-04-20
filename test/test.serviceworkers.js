@@ -1,14 +1,14 @@
 /* global navigator:true, window:true, Modernizr:true, describe:true, expect:true, it:true, xit:true, before:true, beforeEach:true, after:true*/
 var DRIVERS = [
-    papergirl.INDEXEDDB,
-    papergirl.LOCALSTORAGE,
-    papergirl.WEBSQL
+    papergirl.storage.INDEXEDDB,
+    papergirl.storage.LOCALSTORAGE,
+    papergirl.storage.WEBSQL
 ];
 
 DRIVERS.forEach(function(driverName) {
-    if ((!Modernizr.indexeddb && driverName === papergirl.INDEXEDDB) ||
-        (!Modernizr.localstorage && driverName === papergirl.LOCALSTORAGE) ||
-        (!Modernizr.websqldatabase && driverName === papergirl.WEBSQL)) {
+    if ((!Modernizr.indexeddb && driverName === papergirl.storage.INDEXEDDB) ||
+        (!Modernizr.localstorage && driverName === papergirl.storage.LOCALSTORAGE) ||
+        (!Modernizr.websqldatabase && driverName === papergirl.storage.WEBSQL)) {
         // Browser doesn't support this storage library, so we exit the API
         // tests.
         return;
@@ -42,7 +42,7 @@ DRIVERS.forEach(function(driverName) {
             navigator.serviceWorker
                 .register('/test/serviceworker-client.js')
                 .then(function() {
-                    return papergirl.setDriver(driverName);
+                    return papergirl.storage.setDriver(driverName);
                 })
                 .then(done);
         });
@@ -62,11 +62,11 @@ DRIVERS.forEach(function(driverName) {
         });
 
         beforeEach(function(done) {
-            papergirl.clear(done);
+            papergirl.storage.clear(done);
         });
 
-        if (driverName === papergirl.LOCALSTORAGE ||
-            driverName === papergirl.WEBSQL) {
+        if (driverName === papergirl.storage.LOCALSTORAGE ||
+            driverName === papergirl.storage.WEBSQL) {
             it.skip(driverName + ' is not supported in service workers');
             return;
         }
@@ -74,7 +74,7 @@ DRIVERS.forEach(function(driverName) {
         xit('should set a value on registration', function(done) {
             navigator.serviceWorker.ready
                 .then(function() {
-                    return papergirl.getItem('service worker registration');
+                    return papergirl.storage.getItem('service worker registration');
                 })
                 .then(function(result) {
                     expect(result)

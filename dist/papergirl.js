@@ -1,6 +1,6 @@
 /*!
     Papergirl -- XHR+ETAG
-    Version 0.5.2
+    Version 0.5.3
 */
 (function() {
 var define, requireModule, require, requirejs;
@@ -1081,7 +1081,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        F.prototype.onCache = function onCache(func) {
 	            this._onCache = func;
-
 	            return this;
 	        };
 

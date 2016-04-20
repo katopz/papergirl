@@ -318,7 +318,6 @@ const papergirl = (function(globalObject) {
 
         onCache(func) {
             this._onCache = func;
-
             return this;
         }
 

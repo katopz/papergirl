@@ -1,5 +1,5 @@
 /*globals importScripts:true, self:true */
-importScripts("/dist/papergirl.js");
+importScripts("/dist/papergirl.storage.js");
 
 self.addEventListener('message', function(e) {
     function handleError(e) {
@@ -10,13 +10,13 @@ self.addEventListener('message', function(e) {
         });
     }
 
-    papergirl.setDriver(e.data.driver, function() {
-        papergirl.setItem('web worker', e.data.value, function() {
-            papergirl.getItem('web worker', function(err, value) {
+    papergirl.storage.setDriver(e.data.driver, function() {
+        papergirl.setData('web worker', e.data.value).then(function() {
+            return papergirl.getData('web worker').then(function(err, value) {
                 self.postMessage({
                     body: value
                 });
             });
-        }, handleError).catch(handleError);
+        }).catch(handleError);
     }, handleError);
 }, false);
