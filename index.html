@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Papergirl : XHR with ETAG via localForage">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Papergirl</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/katopz/papergirl">View on GitHub</a>
+
+          <h1 id="project_title">Papergirl</h1>
+          <h2 id="project_tagline">XHR with ETAG via localForage</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/katopz/papergirl/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/katopz/papergirl/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <blockquote>
+<p>PS : In heavy development, please leave her alone for now. :)</p>
+</blockquote>
+
+<h1>
+<a id="papergirl" class="anchor" href="#papergirl" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Papergirl</h1>
+
+<p>Papergirl will deliver content when you make a request. She's smart enough<br>
+to let you know that you already have content in your hand by <code>etag</code><br>
+so you will save your time going to remote server and be happy using local content.   </p>
+
+<h1>
+<a id="stack" class="anchor" href="#stack" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Stack</h1>
+
+<ul>
+<li>[x] Persistent Data : <a href="https://github.com/mozilla/localForage">https://github.com/mozilla/localForage</a>
+</li>
+<li>[ ] Compression : <a href="https://github.com/pieroxy/lz-string">https://github.com/pieroxy/lz-string</a>
+</li>
+</ul>
+
+<h1>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install</h1>
+
+<div class="highlight highlight-source-shell"><pre>npm install papergirl --save</pre></div>
+
+<h1>
+<a id="run-examples" class="anchor" href="#run-examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Run Examples</h1>
+
+<div class="highlight highlight-source-shell"><pre>npm run dev</pre></div>
+
+<h1>
+<a id="basic" class="anchor" href="#basic" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Basic</h1>
+
+<h3>
+<a id="simple-request-as-functional" class="anchor" href="#simple-request-as-functional" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Simple request as functional.</h3>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">papergirl</span>.<span class="pl-c1">watch</span>()
+.<span class="pl-en">onCache</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+    <span class="pl-c">// Occur when got cached data.</span>
+    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(data);
+})
+<span class="pl-c">// Never Cached this data before.  </span>
+.<span class="pl-en">onInsert</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onInsert:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+})
+<span class="pl-c">// Cached exist but data is mismatch.</span>
+.<span class="pl-en">onUpdate</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onUpdate:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+})
+.<span class="pl-c1">onError</span>(<span class="pl-k">function</span>(<span class="pl-smi">error</span>) {
+    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(error);
+})
+.<span class="pl-en">request</span>(<span class="pl-s"><span class="pl-pds">'</span>foo.json<span class="pl-pds">'</span></span>);</pre></div>
+
+<h3>
+<a id="simple-request-as-functional-with-localhost-fallback" class="anchor" href="#simple-request-as-functional-with-localhost-fallback" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Simple request as functional with localhost fallback</h3>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">papergirl</span>.<span class="pl-c1">watch</span>()
+    <span class="pl-c">// Cached exist.</span>
+    .<span class="pl-en">onCache</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onCache:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Never Cached this data before.  </span>
+    .<span class="pl-en">onInsert</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onInsert:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Cached exist but data is mismatch.</span>
+    .<span class="pl-en">onUpdate</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onUpdate:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Occur when insert or update cache from remote.</span>
+    .<span class="pl-en">onUpsert</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onUpsert:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Occur after 200 OK and cached done.</span>
+    .<span class="pl-en">onSync</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onSync:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Capture error</span>
+    .<span class="pl-c1">onError</span>(<span class="pl-k">function</span>(<span class="pl-smi">error</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onError : <span class="pl-pds">'</span></span> <span class="pl-k">+</span> error);
+    })
+    <span class="pl-c">// Use this uri when at localhost origin.</span>
+    .<span class="pl-en">local</span>(<span class="pl-s"><span class="pl-pds">'</span>bar.json<span class="pl-pds">'</span></span>)
+    <span class="pl-c">// Make remote request.</span>
+    .<span class="pl-en">request</span>(<span class="pl-s"><span class="pl-pds">'</span>foo.json<span class="pl-pds">'</span></span>);</pre></div>
+
+<h1>
+<a id="advance" class="anchor" href="#advance" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Advance</h1>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">papergirl</span>.<span class="pl-en">getCacheFirst</span>(<span class="pl-s"><span class="pl-pds">'</span>foo.json<span class="pl-pds">'</span></span>, {
+    <span class="pl-c">// Occur when got cached data.</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">cache</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(data);
+    },
+    <span class="pl-c">// Intercept xhr request to modify headers before send.</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">beforeSend</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">xhr</span>) {
+        <span class="pl-smi">xhr</span>.<span class="pl-c1">setRequestHeader</span>(<span class="pl-s"><span class="pl-pds">'</span>foo<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>bar<span class="pl-pds">'</span></span>);
+    },
+    <span class="pl-c">// Intercept xhr while onload</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">onload</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">xhr</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(xhr);
+    },
+    <span class="pl-c">// Occur when never cache before and get insert from remote.</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">insert</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>insert<span class="pl-pds">'</span></span>);
+    },
+    <span class="pl-c">// Cached but not match from remote.</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">update</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>update<span class="pl-pds">'</span></span>);
+    },
+    <span class="pl-c">// Cache is upsert from remote.</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">upsert</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>upsert<span class="pl-pds">'</span></span>);
+    },
+    <span class="pl-c">// Cache data is match with remote data.</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">match</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>match<span class="pl-pds">'</span></span>);
+    },
+    <span class="pl-c">// Cache is match with remote by ETag.</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">not_mod</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>not_mod<span class="pl-pds">'</span></span>);
+    },
+    <span class="pl-c">// Occur after 200 OK and cached done.</span>
+    <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">sync</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>sync<span class="pl-pds">'</span></span>);
+    }
+});</pre></div>
+
+<h1>
+<a id="events" class="anchor" href="#events" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Events</h1>
+
+<ul>
+<li>[x] <code>cache</code> : Occur when got cached data.</li>
+<li>[x] <code>beforeSend</code>: Intercept xhr request usually to modify headers before send.</li>
+<li>[x] <code>onload</code>: Intercept xhr while onload.</li>
+<li>[x] <code>insert</code> : Occur when never cache before and get insert from remote.</li>
+<li>[x] <code>update</code> : Cached but not match from remote.</li>
+<li>[x] <code>upsert</code> : Cache get <code>insert</code> or <code>update</code> from remote.</li>
+<li>[x] <code>match</code> : Cache data is match with remote data.</li>
+<li>[x] <code>not_mod</code> : Cache is match with remote by ETag.</li>
+<li>[x] <code>sync</code> : Occur after 200 or 304 and cached done.</li>
+</ul>
+
+<h1>
+<a id="todo" class="anchor" href="#todo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>TODO</h1>
+
+<ul>
+<li>[x] Test strategy.cacheFirst.</li>
+<li>[ ] Test strategy.networkFirst.</li>
+<li>[ ] Test strategy.cacheOnly.</li>
+<li>[ ] Test strategy.networkOnly.</li>
+<li>[ ] Test parallel requests.</li>
+<li>[ ] Implement optional <code>etag</code>. // useIfNoneMatch</li>
+<li>[ ] Implement optional <code>last-modified</code>. // useLastModify</li>
+<li>[ ] Implement <code>last-modified</code> fallback.</li>
+<li>[ ] Test <code>last-modified</code> fallback.</li>
+<li>[ ] Test ready.</li>
+<li>[ ] Support multiple <code>storeName</code>.</li>
+<li>[ ] Support <code>Cache-Control: max-age</code>.</li>
+<li>[ ] Support xhr.responseTextType = 'json'.</li>
+<li>[ ] Ignore query when cache.</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Papergirl maintained by <a href="https://github.com/katopz">katopz</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
