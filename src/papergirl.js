@@ -211,13 +211,13 @@ const papergirl = (function(globalObject) {
                     return self._request(url, options).then(function(data) {
                         // Success.
                         resolve(data);
-                    }).catch(function(e) {
+                    }).catch(function(error) {
                         // Fail, try cache.
                         self.getData(url).then(function(data) {
                             if (data) {
                                 resolve(data);
                             } else {
-                                reject(new Error('Network Error and no cached. : ' + e));
+                                reject(new Error('Network Error and no cached. : ' + error));
                             }
                         });
                     });
@@ -320,7 +320,17 @@ const papergirl = (function(globalObject) {
             this._onCache = func;
             return this;
         }
-
+        
+        onSend(func) {
+            this._onSend = func;
+            return this;
+        }
+        
+        onLoad(func) {
+            this._onLoad = func;
+            return this;
+        }
+        
         onInsert(func) {
             this._onInsert = func;
             return this;
@@ -333,6 +343,11 @@ const papergirl = (function(globalObject) {
 
         onUpsert(func) {
             this._onUpsert = func;
+            return this;
+        }
+
+        onMatch(func) {
+            this._onMatch = func;
             return this;
         }
 
@@ -352,9 +367,13 @@ const papergirl = (function(globalObject) {
             options.strategy = this.cacheFirst;
 
             options.cache = this._onCache;
+            options.beforeSend = this._onSend;
+            options.onload = this._onLoad;
             options.insert = this._onInsert;
             options.update = this._onUpdate;
             options.upsert = this._onUpsert;
+            options.match = this._onMatch;
+            options.not_mod = this._onNotModified;
             options.sync = this._onSync;
 
             // Auto use local uri if has it in localhost origin.
@@ -378,9 +397,13 @@ const papergirl = (function(globalObject) {
             delete self.parent;
             delete self.me;
             delete self._onCache;
+            delete self._onSend;
+            delete self._onLoad;
             delete self._onInsert;
             delete self._onUpdate;
             delete self._onUpsert;
+            delete self._onMatch;
+            delete self._onNotModified;
             delete self._onSync;
             delete self._onError;
         }

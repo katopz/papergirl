@@ -241,7 +241,62 @@ describe('Papergirl', function() {
 
     // All fucntional Methods -----------------------------------------------------------------------------------------------
 
-    it('can watch request after cached match for cache, sync', function(done) {
+    it('can tell that cache is not exist and get insert (beforeSend, onload, insert, upsert, sync)', function(done) {
+        var events = [];
+
+        // Load FOO from remote.
+        papergirl.watch()
+            // Cached exist.
+            .onCache(function(data) {
+                assert(expect(data).to.be.not.ok);
+                events.push('cache');
+            })
+            // Intercept xhr request to modify headers before send.
+            .onSend(function(xhr) {
+                assert(expect(xhr).to.be.ok);
+                events.push('beforeSend');
+            })
+            // Intercept xhr while onload
+            .onLoad(function(xhr) {
+                assert(expect(xhr).to.be.ok);
+                events.push('onload');
+            })
+            // Never Cached this data before.  
+            .onInsert(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                events.push('insert');
+            })
+            // Cached exist but data is mismatch.
+            .onUpdate(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                events.push('update');
+            })
+            // Occur when insert or update cache from remote.
+            .onUpsert(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                events.push('upsert');
+            })
+            // Cache data is match with remote data.
+            .onMatch(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                events.push('match');
+            })
+            // Occur after 200 OK and cached done.
+            .onSync(function(data) {
+                assert(expect(data).to.be(mock.FOO_DATA));
+                events.push('sync');
+                assert(expect(events.join(',')).to.be(['beforeSend', 'onload', 'insert', 'upsert', 'sync'].join(',')));
+                done();
+            })
+            // Capture error
+            .onError(function(error) {
+                assert(expect(error).to.not.be.an(Error));
+            })
+            // Make remote request.
+            .request(mock.FOO_URL);
+    });
+
+    it('can tell that cached is match (cache, beforeSend, onload, match, sync)', function(done) {
         var events = [];
 
         // Simulated old content as FOO
@@ -255,6 +310,16 @@ describe('Papergirl', function() {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('cache');
                 })
+                // Intercept xhr request to modify headers before send.
+                .onSend(function(xhr) {
+                    assert(expect(xhr).to.be.ok);
+                    events.push('beforeSend');
+                })
+                // Intercept xhr while onload
+                .onLoad(function(xhr) {
+                    assert(expect(xhr).to.be.ok);
+                    events.push('onload');
+                })
                 // Never Cached this data before.  
                 .onInsert(function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
@@ -270,11 +335,16 @@ describe('Papergirl', function() {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('upsert');
                 })
+                // Cache data is match with remote data.
+                .onMatch(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('match');
+                })
                 // Occur after 200 OK and cached done.
                 .onSync(function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
-                    assert(expect(events.join(',')).to.be(['cache', 'sync'].join(',')));
+                    assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'match', 'sync'].join(',')));
                     done();
                 })
                 // Capture error
@@ -286,7 +356,7 @@ describe('Papergirl', function() {
         });
     });
 
-    it('can watch request after cached match for cache, update, upsert, sync', function(done) {
+    it('can tell that existing cache is updated (cache, beforeSend, onload, update, upsert, sync)', function(done) {
         var events = [];
 
         // Simulated old content as BAR
@@ -300,6 +370,16 @@ describe('Papergirl', function() {
                     assert(expect(data).to.be(mock.BAR_DATA));
                     events.push('cache');
                 })
+                // Intercept xhr request to modify headers before send.
+                .onSend(function(xhr) {
+                    assert(expect(xhr).to.be.ok);
+                    events.push('beforeSend');
+                })
+                // Intercept xhr while onload
+                .onLoad(function(xhr) {
+                    assert(expect(xhr).to.be.ok);
+                    events.push('onload');
+                })
                 // Never Cached this data before.  
                 .onInsert(function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
@@ -315,11 +395,16 @@ describe('Papergirl', function() {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('upsert');
                 })
+                // Cache data is match with remote data.
+                .onMatch(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('match');
+                })
                 // Occur after 200 OK and cached done.
                 .onSync(function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
-                    assert(expect(events.join(',')).to.be(['cache', 'update', 'upsert', 'sync'].join(',')));
+                    assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'update', 'upsert', 'sync'].join(',')));
                     done();
                 })
                 // Capture error

@@ -6,6 +6,13 @@ Papergirl will deliver content when you make a request. She's smart enough
 to let you know that you already have content in your hand by `etag`  
 so you will save your time going to remote server and be happy using local content.   
 
+```
+                                 ┌───(304)────────────────────────── not_mod ──┐ 
+                                 │         ┌─ insert ─┐                        │ ┌─ done
+ request ─┬─────────┬─ send ── load ─(200)─┤          ├─ upsert ─┬── sync ─────┴─┤
+          └─ cache ─┘                      ├─ update ─┘          │               └─ error
+               ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪└──────────── match ──┘
+```
 Stack
 ===
 - [x] Persistent Data : https://github.com/mozilla/localForage
@@ -16,42 +23,69 @@ Install
 ```shell
 npm install papergirl --save
 ```
-
-Run Examples
+How to use
 ===
-```shell
-npm run dev
-```
-
-Basic
-===
-### Simple request as functional.
+### Request and watch as functional.
 ```js
 papergirl.watch()
-.onCache(function(data) {
     // Occur when got cached data.
-    console.log(data);
-})
-// Never Cached this data before.  
-.onInsert(function(data) {
-    console.log('onInsert:' + data);
-})
-// Cached exist but data is mismatch.
-.onUpdate(function(data) {
-    console.log('onUpdate:' + data);
-})
-.onError(function(error) {
-    console.log(error);
-})
-.request('foo.json');
+    .onCache(function(data) {
+        console.log(data);
+    })
+    // Never Cached this data before.  
+    .onInsert(function(data) {
+        console.log('onInsert:' + data);
+    })
+    // Cached exist but data is mismatch.
+    .onUpdate(function(data) {
+        console.log('onUpdate:' + data);
+    })
+    // Something wrong.
+    .onError(function(error) {
+        console.log(error);
+    })
+    .request('foo.json');
 ```
 
-### Simple request as functional with localhost fallback
+### Request and watch as functional with **localhost** fallback.
+```js
+papergirl.watch()
+    // Occur when got cached data.
+    .onCache(function(data) {
+        console.log(data);
+    })
+    // Never Cached this data before.  
+    .onInsert(function(data) {
+        console.log('onInsert:' + data);
+    })
+    // Cached exist but data is mismatch.
+    .onUpdate(function(data) {
+        console.log('onUpdate:' + data);
+    })
+    // Something wrong.
+    .onError(function(error) {
+        console.log(error);
+    })
+    // Use this uri when at localhost origin.
+    .local('bar.json')
+    // Make remote request.
+    .request('foo.json');
+```
+
+### Request and watch every methods as functional.
 ```js
 papergirl.watch()
     // Cached exist.
     .onCache(function(data) {
         console.log('onCache:' + data);
+    })
+    // Intercept xhr request to modify headers before send.
+    .onSend(function(xhr) {
+        xhr.setRequestHeader('foo', 'bar');
+    })
+    // Intercept xhr while onload
+    .onLoad(function(xhr) {
+        console.log(xhr);
     })
     // Never Cached this data before.  
     .onInsert(function(data) {
@@ -65,11 +99,15 @@ papergirl.watch()
     .onUpsert(function(data) {
         console.log('onUpsert:' + data);
     })
+    // Cache data is match with remote data.
+    .onMatch(function(data) {
+        console.log('match:' + data);
+    })
     // Occur after 200 OK and cached done.
     .onSync(function(data) {
         console.log('onSync:' + data);
     })
-    // Capture error
+    // Something wrong.
     .onError(function(error) {
         console.log('onError : ' + error);
     })
@@ -78,7 +116,7 @@ papergirl.watch()
     // Make remote request.
     .request('foo.json');
 ```
-Advance
+How to use as options and promise.
 ===
 ```js
 papergirl.getCacheFirst('foo.json', {
@@ -118,10 +156,16 @@ papergirl.getCacheFirst('foo.json', {
     'sync': function(data) {
         console.log('sync');
     }
+}).then(function(data) {
+    // Done.
+    console.log(data);
+}).catch(function(error) {
+    // Something wrong.
+    console.log(error);
 });
 ```
 
-Events
+Options
 ===
 - [x] `cache` : Occur when got cached data.
 - [x] `beforeSend`: Intercept xhr request usually to modify headers before send.
@@ -144,7 +188,7 @@ TODO
 - [ ] Implement optional `last-modified`. // useLastModify
 - [ ] Implement `last-modified` fallback.
 - [ ] Test `last-modified` fallback.
-- [ ] Test ready.
+- [x] Test ready.
 - [ ] Support multiple `storeName`.
 - [ ] Support `Cache-Control: max-age`.
 - [ ] Support xhr.responseTextType = 'json'.

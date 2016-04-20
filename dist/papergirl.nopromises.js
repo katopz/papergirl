@@ -1,6 +1,6 @@
 /*!
     Papergirl -- XHR+ETAG
-    Version 0.5.3
+    Version 0.5.4
 */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -282,13 +282,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return self._request(url, options).then(function (data) {
 	                        // Success.
 	                        resolve(data);
-	                    })["catch"](function (e) {
+	                    })["catch"](function (error) {
 	                        // Fail, try cache.
 	                        self.getData(url).then(function (data) {
 	                            if (data) {
 	                                resolve(data);
 	                            } else {
-	                                reject(new Error('Network Error and no cached. : ' + e));
+	                                reject(new Error('Network Error and no cached. : ' + error));
 	                            }
 	                        });
 	                    });
@@ -401,6 +401,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this;
 	        };
 
+	        F.prototype.onSend = function onSend(func) {
+	            this._onSend = func;
+	            return this;
+	        };
+
+	        F.prototype.onLoad = function onLoad(func) {
+	            this._onLoad = func;
+	            return this;
+	        };
+
 	        F.prototype.onInsert = function onInsert(func) {
 	            this._onInsert = func;
 	            return this;
@@ -413,6 +423,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        F.prototype.onUpsert = function onUpsert(func) {
 	            this._onUpsert = func;
+	            return this;
+	        };
+
+	        F.prototype.onMatch = function onMatch(func) {
+	            this._onMatch = func;
 	            return this;
 	        };
 
@@ -432,9 +447,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            options.strategy = this.cacheFirst;
 
 	            options.cache = this._onCache;
+	            options.beforeSend = this._onSend;
+	            options.onload = this._onLoad;
 	            options.insert = this._onInsert;
 	            options.update = this._onUpdate;
 	            options.upsert = this._onUpsert;
+	            options.match = this._onMatch;
+	            options.not_mod = this._onNotModified;
 	            options.sync = this._onSync;
 
 	            // Auto use local uri if has it in localhost origin.
@@ -458,9 +477,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            delete self.parent;
 	            delete self.me;
 	            delete self._onCache;
+	            delete self._onSend;
+	            delete self._onLoad;
 	            delete self._onInsert;
 	            delete self._onUpdate;
 	            delete self._onUpsert;
+	            delete self._onMatch;
+	            delete self._onNotModified;
 	            delete self._onSync;
 	            delete self._onError;
 	        };
