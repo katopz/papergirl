@@ -21,27 +21,27 @@ papergirl.getCacheFirst('foo.json', {
         console.log(xhr);
     },
     // Occur when never cache before and get insert from remote.
-    'insert': function(xhr) {
+    'insert': function(data) {
         console.log('insert');
     },
     // Cached but not match from remote.
-    'update': function(xhr) {
+    'update': function(data) {
         console.log('update');
     },
     // Cache is upsert from remote.
-    'upsert': function(xhr) {
+    'upsert': function(data) {
         console.log('upsert');
     },
     // Cache data is match with remote data.
-    'match': function(xhr) {
+    'match': function(data) {
         console.log('match');
     },
     // Occur when cache is done.
-    'sync': function(xhr) {
+    'sync': function(data) {
         console.log('sync');
     },
     // Cache is match with remote by ETag.
-    'not_mod': function(xhr) {
+    'not_mod': function(data) {
         console.log('not_mod');
     }
 }).then(function(data) {

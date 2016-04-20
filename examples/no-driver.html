@@ -21,11 +21,11 @@
       papergirl.ready(function() {
           console.log('ready', arguments);
 
-          papergirl.setItem('testKey', 'testValue').then(function() {}, function() {
+          papergirl.storage.setItem('testKey', 'testValue').then(function() {}, function() {
             console.log('setItem: ', arguments);
           });
 
-          papergirl.getItem('testKey').then(function() {}, function() {
+          papergirl.storage.getItem('testKey').then(function() {}, function() {
             console.log('getItem: ', arguments);
           });
           
@@ -34,9 +34,9 @@
           
         }, function() {
           console.log('ready().then', arguments);
-          console.log('papergirl.driver():', papergirl.driver());
+          console.log('papergirl.storage.driver():', papergirl.storage.driver());
 
-          papergirl.setDriver(papergirl.LOCALSTORAGE).then(function() {}, function() {
+          papergirl.storage.setDriver(papergirl.storage.LOCALSTORAGE).then(function() {}, function() {
             console.log('setDriver', arguments);
           });
         });
