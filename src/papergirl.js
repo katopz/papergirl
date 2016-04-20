@@ -79,8 +79,11 @@ const papergirl = (function(globalObject) {
 
                     // Free some ram.
                     self.delloc = function(options) {
-                        delete options.xhr;
-                        delete options.data;
+                        if (options) {
+                            delete options.xhr;
+                            delete options.data;
+                            delete options.etag;
+                        }
                     };
 
                     switch (xhr.status) {
@@ -95,7 +98,7 @@ const papergirl = (function(globalObject) {
                             } catch (error) {
                                 console.log(error);
                             }
-
+                            
                             self.setData(url, responseText, etag).then(function(data) {
                                 // Has cached?
                                 if (options.data === null || typeof (options.data) === 'undefined') {
@@ -118,14 +121,14 @@ const papergirl = (function(globalObject) {
                                     }
                                 }
 
-                                // OK
+                                // OK + cached
                                 self._hook(options, 'sync', [data, url, options]);
-
-                                // Free some ram.
-                                self.delloc(options);
 
                                 // Done
                                 resolve(responseText);
+
+                                // Free some ram.
+                                self.delloc(options);
                             });
 
                             break;
@@ -148,7 +151,7 @@ const papergirl = (function(globalObject) {
                                 self.delloc(options);
 
                                 // Retry without etag, should get 200.
-                                self.request(url, options);
+                                self.request(url, options).then(resolve);
                             }
 
                             break;
@@ -199,13 +202,13 @@ const papergirl = (function(globalObject) {
 
             // Remote only
             if (options.strategy === this.networkOnly) {
-                return self._request(url, null, options);
+                return self._request(url, options);
             }
 
             // networkFirst
             if (options.strategy === this.networkFirst) {
                 return new Promise(function(resolve, reject) {
-                    return self._request(url, null, options).then(function(data) {
+                    return self._request(url, options).then(function(data) {
                         // Success.
                         resolve(data);
                     }).catch(function(e) {
@@ -338,13 +341,14 @@ const papergirl = (function(globalObject) {
             this._onSync = func;
             return this;
         }
-        
+
         onError(func) {
             this._onError = func;
             return this;
         }
 
         request(url, options) {
+            const self = this;
             options = options || {};
             options.strategy = this.cacheFirst;
 
@@ -359,7 +363,10 @@ const papergirl = (function(globalObject) {
                 url = this._local_uri;
             }
 
-            this.parent.getCacheFirst(url, options).then(this.delloc).catch(this._onError);
+            this.parent.getCacheFirst(url, options).then(function() {
+                self.delloc(self);
+            }).catch(this._onError);
+
             return this;
         }
 
@@ -368,15 +375,15 @@ const papergirl = (function(globalObject) {
             return this;
         }
 
-        delloc() {
-            delete this.parent;
-            delete this.me;
-            delete this._onCache;
-            delete this._onInsert;
-            delete this._onUpdate;
-            delete this._onUpsert;
-            delete this._onSync;
-            delete this._onError;
+        delloc(self) {
+            delete self.parent;
+            delete self.me;
+            delete self._onCache;
+            delete self._onInsert;
+            delete self._onUpdate;
+            delete self._onUpsert;
+            delete self._onSync;
+            delete self._onError;
         }
     }
 

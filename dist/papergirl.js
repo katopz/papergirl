@@ -1,6 +1,6 @@
 /*!
     Papergirl -- XHR+ETAG
-    Version 0.5.0
+    Version 0.5.2
 */
 (function() {
 var define, requireModule, require, requirejs;
@@ -833,8 +833,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                    // Free some ram.
 	                    self.delloc = function (options) {
-	                        delete options.xhr;
-	                        delete options.data;
+	                        if (options) {
+	                            delete options.xhr;
+	                            delete options.data;
+	                            delete options.etag;
+	                        }
 	                    };
 
 	                    switch (xhr.status) {
@@ -872,14 +875,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                    }
 	                                }
 
-	                                // OK
+	                                // OK + cached
 	                                self._hook(options, 'sync', [data, url, options]);
-
-	                                // Free some ram.
-	                                self.delloc(options);
 
 	                                // Done
 	                                resolve(responseText);
+
+	                                // Free some ram.
+	                                self.delloc(options);
 	                            });
 
 	                            break;
@@ -902,7 +905,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                self.delloc(options);
 
 	                                // Retry without etag, should get 200.
-	                                self.request(url, options);
+	                                self.request(url, options).then(resolve);
 	                            }
 
 	                            break;
@@ -953,13 +956,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            // Remote only
 	            if (options.strategy === this.networkOnly) {
-	                return self._request(url, null, options);
+	                return self._request(url, options);
 	            }
 
 	            // networkFirst
 	            if (options.strategy === this.networkFirst) {
 	                return new Promise(function (resolve, reject) {
-	                    return self._request(url, null, options).then(function (data) {
+	                    return self._request(url, options).then(function (data) {
 	                        // Success.
 	                        resolve(data);
 	                    })["catch"](function (e) {
@@ -1108,6 +1111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 
 	        F.prototype.request = function request(url, options) {
+	            var self = this;
 	            options = options || {};
 	            options.strategy = this.cacheFirst;
 
@@ -1122,7 +1126,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                url = this._local_uri;
 	            }
 
-	            this.parent.getCacheFirst(url, options).then(this.delloc)["catch"](this._onError);
+	            this.parent.getCacheFirst(url, options).then(function () {
+	                self.delloc(self);
+	            })["catch"](this._onError);
+
 	            return this;
 	        };
 
@@ -1131,15 +1138,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this;
 	        };
 
-	        F.prototype.delloc = function delloc() {
-	            delete this.parent;
-	            delete this.me;
-	            delete this._onCache;
-	            delete this._onInsert;
-	            delete this._onUpdate;
-	            delete this._onUpsert;
-	            delete this._onSync;
-	            delete this._onError;
+	        F.prototype.delloc = function delloc(self) {
+	            delete self.parent;
+	            delete self.me;
+	            delete self._onCache;
+	            delete self._onInsert;
+	            delete self._onUpdate;
+	            delete self._onUpsert;
+	            delete self._onSync;
+	            delete self._onError;
 	        };
 
 	        return F;

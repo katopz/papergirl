@@ -51,24 +51,28 @@ papergirl.getCacheFirst('foo.json', {
         console.log(xhr);
     },
     // Occur when never cache before and get insert from remote.
-    'insert': function(xhr) {
+    'insert': function(data) {
         console.log('insert');
     },
     // Cached but not match from remote.
-    'update': function(xhr) {
+    'update': function(data) {
         console.log('update');
     },
     // Cache is upsert from remote.
-    'upsert': function(xhr) {
+    'upsert': function(data) {
         console.log('upsert');
     },
     // Cache data is match with remote data.
-    'match': function(xhr) {
+    'match': function(data) {
         console.log('match');
     },
     // Cache is match with remote by ETag.
-    'not_mod': function(xhr) {
+    'not_mod': function(data) {
         console.log('not_mod');
+    },
+    // Occur after 200 OK and cached done.
+    'sync': function(data) {
+        console.log('sync');
     }
 });
 ```
@@ -83,6 +87,7 @@ Advance
 - [x] `upsert` : Cache get `insert` or `update` from remote.
 - [x] `match` : Cache data is match with remote data.
 - [x] `not_mod` : Cache is match with remote by ETag.
+- [x] `sync` : Occur after 200 or 304 and cached done.
 
 TODO
 ===

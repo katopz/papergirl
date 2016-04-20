@@ -219,8 +219,11 @@ describe('Papergirl', function() {
         // etag will set after local events fire.
         var upsert = function(data, url, options) {
             assert(expect(data).to.be(mock.FOO_DATA));
+            assert(expect(options.etag).to.be.ok);
+            const _etag = options.etag;
             papergirl.getETAG(url).then(function(etag) {
-                assert(expect(etag).to.be(options.etag));
+                assert(expect(etag).to.be.ok);
+                assert(expect(etag).to.be(_etag));
                 done();
             });
         };
@@ -236,7 +239,184 @@ describe('Papergirl', function() {
         });
     });
 
-    // Methods inherit from localforage -----------------------------------------------------------------------------------------------
+    // All Methods -----------------------------------------------------------------------------------------------
+
+    it('can watch request after cached match for cache, beforeSend, onload, match, sync', function(done) {
+        var events = [];
+
+        // Simulated old content as FOO
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            // Cached as FOO
+            assert(expect(data).to.be(mock.FOO_DATA));
+            // Load FOO from remote.
+            papergirl.getCacheFirst(mock.FOO_URL, {
+                // Occur when got cached data.
+                'cache': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('cache');
+                },
+                // Intercept xhr request to modify headers before send.
+                'beforeSend': function(xhr) {
+                    assert(expect(xhr).to.be.ok);
+                    events.push('beforeSend');
+                },
+                // Intercept xhr while onload
+                'onload': function(xhr) {
+                    assert(expect(xhr).to.be.ok);
+                    events.push('onload');
+                },
+                // Occur when never cache before and get insert from remote.
+                'insert': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('insert');
+                },
+                // Cached but not match from remote.
+                'update': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('update');
+                },
+                // Cache is upsert from remote.
+                'upsert': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('upsert');
+                },
+                // Cache data is match with remote data.
+                'match': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('match');
+                },
+                // Cache is match with remote by ETag.
+                'not_mod': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('not_mod');
+                },
+                // Occur after 200 OK and cached done.
+                'sync': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('sync');
+                    console.log(events);
+                    assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'match', 'sync'].join(',')));
+                    done();
+                }
+            });
+        });
+    });
+
+    it('can watch request after cached for cache, beforeSend, onload, update, upsert, sync', function(done) {
+        var events = [];
+
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            // Cached as BAR
+            assert(expect(data).to.be(mock.BAR_DATA));
+            // Load FOO from remote.
+            papergirl.getCacheFirst(mock.FOO_URL, {
+                // Occur when got cached data.
+                'cache': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('cache');
+                },
+                // Intercept xhr request to modify headers before send.
+                'beforeSend': function(xhr) {
+                    assert(expect(xhr).to.be.ok);
+                    events.push('beforeSend');
+                },
+                // Intercept xhr while onload
+                'onload': function(xhr) {
+                    assert(expect(xhr).to.be.ok);
+                    events.push('onload');
+                },
+                // Occur when never cache before and get insert from remote.
+                'insert': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('insert');
+                },
+                // Cached but not match from remote.
+                'update': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('update');
+                },
+                // Cache is upsert from remote.
+                'upsert': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('upsert');
+                },
+                // Cache data is match with remote data.
+                'match': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('match');
+                },
+                // Cache is match with remote by ETag.
+                'not_mod': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('not_mod');
+                },
+                // Occur after 200 OK and cached done.
+                'sync': function(data) {
+                    assert(expect(data).to.be.ok);
+                    events.push('sync');
+                    assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'update', 'upsert', 'sync'].join(',')));
+                    done();
+                }
+            });
+        });
+    });
+
+    it('can watch first request for beforeSend, onload, insert, upsert, sync', function(done) {
+        var events = [];
+
+        papergirl.getCacheFirst(mock.FOO_URL, {
+            // Occur when got cached data.
+            'cache': function(data) {
+                assert(expect(data).to.be.ok);
+                events.push('cache');
+            },
+            // Intercept xhr request to modify headers before send.
+            'beforeSend': function(xhr) {
+                assert(expect(xhr).to.be.ok);
+                events.push('beforeSend');
+            },
+            // Intercept xhr while onload
+            'onload': function(xhr) {
+                assert(expect(xhr).to.be.ok);
+                events.push('onload');
+            },
+            // Occur when never cache before and get insert from remote.
+            'insert': function(data) {
+                assert(expect(data).to.be.ok);
+                events.push('insert');
+            },
+            // Cached but not match from remote.
+            'update': function(data) {
+                assert(expect(data).to.be.ok);
+                events.push('update');
+            },
+            // Cache is upsert from remote.
+            'upsert': function(data) {
+                assert(expect(data).to.be.ok);
+                events.push('upsert');
+            },
+            // Cache data is match with remote data.
+            'match': function(data) {
+                assert(expect(data).to.be.ok);
+                events.push('match');
+            },
+            // Cache is match with remote by ETag.
+            'not_mod': function(data) {
+                assert(expect(data).to.be.ok);
+                events.push('not_mod');
+            },
+            // Occur after 200 OK and cached done.
+            'sync': function(data) {
+                assert(expect(data).to.be.ok);
+                events.push('sync');
+                assert(expect(events.join(',')).to.be(['beforeSend', 'onload', 'insert', 'upsert', 'sync'].join(',')));
+                done();
+            }
+        });
+    });
+
+    // Error Methods -----------------------------------------------------------------------------------------------
 
     it('can watch for 404 error [callback]', function(done) {
         papergirl.watch().onError(function(error) {
@@ -252,6 +432,8 @@ describe('Papergirl', function() {
             done();
         }).request('https://localhost/404.json');
     });
+
+    // Methods inherit from localforage -----------------------------------------------------------------------------------------------
 
     it('can set item via localForage [promise]', function(done) {
         papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
