@@ -11,7 +11,13 @@ Stack
 - [x] Persistent Data : https://github.com/mozilla/localForage
 - [ ] Compression : https://github.com/pieroxy/lz-string
 
-Examples
+Install
+===
+```shell
+npm install papergirl --save
+```
+
+Run Examples
 ===
 ```shell
 npm run dev
@@ -19,23 +25,61 @@ npm run dev
 
 Basic
 ===
-* Simple request as functional.
+### Simple request as functional.
 ```js
 papergirl.watch()
 .onCache(function(data) {
     // Occur when got cached data.
     console.log(data);
 })
-.onUpsert(function(data) {
-    // Occur when insert or update cache from remote.
-    console.log(data);
+// Never Cached this data before.  
+.onInsert(function(data) {
+    console.log('onInsert:' + data);
+})
+// Cached exist but data is mismatch.
+.onUpdate(function(data) {
+    console.log('onUpdate:' + data);
 })
 .onError(function(error) {
     console.log(error);
 })
-.request('/test/foo.json');
+.request('foo.json');
 ```
-* Simple request with intercept.
+
+### Simple request as functional with localhost fallback
+```js
+papergirl.watch()
+    // Cached exist.
+    .onCache(function(data) {
+        console.log('onCache:' + data);
+    })
+    // Never Cached this data before.  
+    .onInsert(function(data) {
+        console.log('onInsert:' + data);
+    })
+    // Cached exist but data is mismatch.
+    .onUpdate(function(data) {
+        console.log('onUpdate:' + data);
+    })
+    // Occur when insert or update cache from remote.
+    .onUpsert(function(data) {
+        console.log('onUpsert:' + data);
+    })
+    // Occur after 200 OK and cached done.
+    .onSync(function(data) {
+        console.log('onSync:' + data);
+    })
+    // Capture error
+    .onError(function(error) {
+        console.log('onError : ' + error);
+    })
+    // Use this uri when at localhost origin.
+    .local('bar.json')
+    // Make remote request.
+    .request('foo.json');
+```
+Advance
+===
 ```js
 papergirl.getCacheFirst('foo.json', {
     // Occur when got cached data.
@@ -77,7 +121,7 @@ papergirl.getCacheFirst('foo.json', {
 });
 ```
 
-Advance
+Events
 ===
 - [x] `cache` : Occur when got cached data.
 - [x] `beforeSend`: Intercept xhr request usually to modify headers before send.

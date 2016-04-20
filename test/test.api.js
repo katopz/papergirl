@@ -239,6 +239,98 @@ describe('Papergirl', function() {
         });
     });
 
+    // All fucntional Methods -----------------------------------------------------------------------------------------------
+
+    it('can watch request after cached match for cache, sync', function(done) {
+        var events = [];
+
+        // Simulated old content as FOO
+        papergirl.setData(mock.FOO_URL, mock.FOO_DATA).then(function(data) {
+            // Cached as FOO
+            assert(expect(data).to.be(mock.FOO_DATA));
+            // Load FOO from remote.
+            papergirl.watch()
+                // Cached exist.
+                .onCache(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('cache');
+                })
+                // Never Cached this data before.  
+                .onInsert(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('insert');
+                })
+                // Cached exist but data is mismatch.
+                .onUpdate(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('update');
+                })
+                // Occur when insert or update cache from remote.
+                .onUpsert(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('upsert');
+                })
+                // Occur after 200 OK and cached done.
+                .onSync(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('sync');
+                    assert(expect(events.join(',')).to.be(['cache', 'sync'].join(',')));
+                    done();
+                })
+                // Capture error
+                .onError(function(error) {
+                    assert(expect(error).to.not.be.an(Error));
+                })
+                // Make remote request.
+                .request(mock.FOO_URL);
+        });
+    });
+
+    it('can watch request after cached match for cache, update, upsert, sync', function(done) {
+        var events = [];
+
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            // Cached as BAR
+            assert(expect(data).to.be(mock.BAR_DATA));
+            // Load FOO from remote.
+            papergirl.watch()
+                // Cached exist.
+                .onCache(function(data) {
+                    assert(expect(data).to.be(mock.BAR_DATA));
+                    events.push('cache');
+                })
+                // Never Cached this data before.  
+                .onInsert(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('insert');
+                })
+                // Cached exist but data is mismatch.
+                .onUpdate(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('update');
+                })
+                // Occur when insert or update cache from remote.
+                .onUpsert(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('upsert');
+                })
+                // Occur after 200 OK and cached done.
+                .onSync(function(data) {
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    events.push('sync');
+                    assert(expect(events.join(',')).to.be(['cache', 'update', 'upsert', 'sync'].join(',')));
+                    done();
+                })
+                // Capture error
+                .onError(function(error) {
+                    assert(expect(error).to.not.be.an(Error));
+                })
+                // Make remote request.
+                .request(mock.FOO_URL);
+        });
+    });
+
     // All Methods -----------------------------------------------------------------------------------------------
 
     it('can watch request after cached match for cache, beforeSend, onload, match, sync', function(done) {
@@ -252,7 +344,7 @@ describe('Papergirl', function() {
             papergirl.getCacheFirst(mock.FOO_URL, {
                 // Occur when got cached data.
                 'cache': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('cache');
                 },
                 // Intercept xhr request to modify headers before send.
@@ -267,34 +359,33 @@ describe('Papergirl', function() {
                 },
                 // Occur when never cache before and get insert from remote.
                 'insert': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('insert');
                 },
                 // Cached but not match from remote.
                 'update': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('update');
                 },
                 // Cache is upsert from remote.
                 'upsert': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('upsert');
                 },
                 // Cache data is match with remote data.
                 'match': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('match');
                 },
                 // Cache is match with remote by ETag.
                 'not_mod': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('not_mod');
                 },
                 // Occur after 200 OK and cached done.
                 'sync': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
-                    console.log(events);
                     assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'match', 'sync'].join(',')));
                     done();
                 }
@@ -313,7 +404,7 @@ describe('Papergirl', function() {
             papergirl.getCacheFirst(mock.FOO_URL, {
                 // Occur when got cached data.
                 'cache': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.BAR_DATA));
                     events.push('cache');
                 },
                 // Intercept xhr request to modify headers before send.
@@ -328,32 +419,32 @@ describe('Papergirl', function() {
                 },
                 // Occur when never cache before and get insert from remote.
                 'insert': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('insert');
                 },
                 // Cached but not match from remote.
                 'update': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('update');
                 },
                 // Cache is upsert from remote.
                 'upsert': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('upsert');
                 },
                 // Cache data is match with remote data.
                 'match': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('match');
                 },
                 // Cache is match with remote by ETag.
                 'not_mod': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('not_mod');
                 },
                 // Occur after 200 OK and cached done.
                 'sync': function(data) {
-                    assert(expect(data).to.be.ok);
+                    assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
                     assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'update', 'upsert', 'sync'].join(',')));
                     done();
@@ -368,7 +459,7 @@ describe('Papergirl', function() {
         papergirl.getCacheFirst(mock.FOO_URL, {
             // Occur when got cached data.
             'cache': function(data) {
-                assert(expect(data).to.be.ok);
+                assert(expect(data).not.to.be.ok);
                 events.push('cache');
             },
             // Intercept xhr request to modify headers before send.
@@ -383,32 +474,32 @@ describe('Papergirl', function() {
             },
             // Occur when never cache before and get insert from remote.
             'insert': function(data) {
-                assert(expect(data).to.be.ok);
+                assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('insert');
             },
             // Cached but not match from remote.
             'update': function(data) {
-                assert(expect(data).to.be.ok);
+                assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('update');
             },
             // Cache is upsert from remote.
             'upsert': function(data) {
-                assert(expect(data).to.be.ok);
+                assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('upsert');
             },
             // Cache data is match with remote data.
             'match': function(data) {
-                assert(expect(data).to.be.ok);
+                assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('match');
             },
             // Cache is match with remote by ETag.
             'not_mod': function(data) {
-                assert(expect(data).to.be.ok);
+                assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('not_mod');
             },
             // Occur after 200 OK and cached done.
             'sync': function(data) {
-                assert(expect(data).to.be.ok);
+                assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('sync');
                 assert(expect(events.join(',')).to.be(['beforeSend', 'onload', 'insert', 'upsert', 'sync'].join(',')));
                 done();
