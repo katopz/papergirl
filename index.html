@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Papergirl : XHR with ETAG via localForage">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Papergirl</title>
+    <meta charset="UTF-8">
+    <title>Papergirl by katopz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">Papergirl</h1>
+      <h2 class="project-tagline">XHR with ETAG via localForage</h2>
+      <a href="https://github.com/katopz/papergirl" class="btn">View on GitHub</a>
+      <a href="https://github.com/katopz/papergirl/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/katopz/papergirl/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/katopz/papergirl">View on GitHub</a>
-
-          <h1 id="project_title">Papergirl</h1>
-          <h2 id="project_tagline">XHR with ETAG via localForage</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/katopz/papergirl/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/katopz/papergirl/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <blockquote>
+    <section class="main-content">
+      <blockquote>
 <p>PS : In heavy development, please leave her alone for now. :)</p>
 </blockquote>
 
@@ -41,6 +29,13 @@
 <p>Papergirl will deliver content when you make a request. She's smart enough<br>
 to let you know that you already have content in your hand by <code>etag</code><br>
 so you will save your time going to remote server and be happy using local content.   </p>
+
+<pre><code>                                 ┌───(304)────────────────────────── not_mod ──┐ 
+                                 │         ┌─ insert ─┐                        │ ┌─ done
+ request ─┬─────────┬─ send ── load ─(200)─┤          ├─ upsert ─┬── sync ─────┴─┤
+          └─ cache ─┘                      ├─ update ─┘          │               └─ error
+               ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪└──────────── match ──┘
+</code></pre>
 
 <h1>
 <a id="stack" class="anchor" href="#stack" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Stack</h1>
@@ -58,41 +53,70 @@ so you will save your time going to remote server and be happy using local conte
 <div class="highlight highlight-source-shell"><pre>npm install papergirl --save</pre></div>
 
 <h1>
-<a id="run-examples" class="anchor" href="#run-examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Run Examples</h1>
-
-<div class="highlight highlight-source-shell"><pre>npm run dev</pre></div>
-
-<h1>
-<a id="basic" class="anchor" href="#basic" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Basic</h1>
+<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to use</h1>
 
 <h3>
-<a id="simple-request-as-functional" class="anchor" href="#simple-request-as-functional" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Simple request as functional.</h3>
+<a id="request-and-watch-as-functional" class="anchor" href="#request-and-watch-as-functional" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Request and watch as functional.</h3>
 
 <div class="highlight highlight-source-js"><pre><span class="pl-smi">papergirl</span>.<span class="pl-c1">watch</span>()
-.<span class="pl-en">onCache</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
     <span class="pl-c">// Occur when got cached data.</span>
-    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(data);
-})
-<span class="pl-c">// Never Cached this data before.  </span>
-.<span class="pl-en">onInsert</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
-    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onInsert:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
-})
-<span class="pl-c">// Cached exist but data is mismatch.</span>
-.<span class="pl-en">onUpdate</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
-    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onUpdate:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
-})
-.<span class="pl-c1">onError</span>(<span class="pl-k">function</span>(<span class="pl-smi">error</span>) {
-    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(error);
-})
-.<span class="pl-en">request</span>(<span class="pl-s"><span class="pl-pds">'</span>foo.json<span class="pl-pds">'</span></span>);</pre></div>
+    .<span class="pl-en">onCache</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(data);
+    })
+    <span class="pl-c">// Never Cached this data before.  </span>
+    .<span class="pl-en">onInsert</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onInsert:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Cached exist but data is mismatch.</span>
+    .<span class="pl-en">onUpdate</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onUpdate:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Something wrong.</span>
+    .<span class="pl-c1">onError</span>(<span class="pl-k">function</span>(<span class="pl-smi">error</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(error);
+    })
+    .<span class="pl-en">request</span>(<span class="pl-s"><span class="pl-pds">'</span>foo.json<span class="pl-pds">'</span></span>);</pre></div>
 
 <h3>
-<a id="simple-request-as-functional-with-localhost-fallback" class="anchor" href="#simple-request-as-functional-with-localhost-fallback" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Simple request as functional with localhost fallback</h3>
+<a id="request-and-watch-as-functional-with-localhost-fallback" class="anchor" href="#request-and-watch-as-functional-with-localhost-fallback" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Request and watch as functional with <strong>localhost</strong> fallback.</h3>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">papergirl</span>.<span class="pl-c1">watch</span>()
+    <span class="pl-c">// Occur when got cached data.</span>
+    .<span class="pl-en">onCache</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(data);
+    })
+    <span class="pl-c">// Never Cached this data before.  </span>
+    .<span class="pl-en">onInsert</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onInsert:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Cached exist but data is mismatch.</span>
+    .<span class="pl-en">onUpdate</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onUpdate:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Something wrong.</span>
+    .<span class="pl-c1">onError</span>(<span class="pl-k">function</span>(<span class="pl-smi">error</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(error);
+    })
+    <span class="pl-c">// Use this uri when at localhost origin.</span>
+    .<span class="pl-en">local</span>(<span class="pl-s"><span class="pl-pds">'</span>bar.json<span class="pl-pds">'</span></span>)
+    <span class="pl-c">// Make remote request.</span>
+    .<span class="pl-en">request</span>(<span class="pl-s"><span class="pl-pds">'</span>foo.json<span class="pl-pds">'</span></span>);</pre></div>
+
+<h3>
+<a id="request-and-watch-every-methods-as-functional" class="anchor" href="#request-and-watch-every-methods-as-functional" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Request and watch every methods as functional.</h3>
 
 <div class="highlight highlight-source-js"><pre><span class="pl-smi">papergirl</span>.<span class="pl-c1">watch</span>()
     <span class="pl-c">// Cached exist.</span>
     .<span class="pl-en">onCache</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onCache:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
+    <span class="pl-c">// Intercept xhr request to modify headers before send.</span>
+    .<span class="pl-en">onSend</span>(<span class="pl-k">function</span>(<span class="pl-smi">xhr</span>) {
+        <span class="pl-smi">xhr</span>.<span class="pl-c1">setRequestHeader</span>(<span class="pl-s"><span class="pl-pds">'</span>foo<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>bar<span class="pl-pds">'</span></span>);
+    })
+    <span class="pl-c">// Intercept xhr while onload</span>
+    .<span class="pl-c1">onLoad</span>(<span class="pl-k">function</span>(<span class="pl-smi">xhr</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(xhr);
     })
     <span class="pl-c">// Never Cached this data before.  </span>
     .<span class="pl-en">onInsert</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
@@ -106,11 +130,15 @@ so you will save your time going to remote server and be happy using local conte
     .<span class="pl-en">onUpsert</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onUpsert:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
     })
+    <span class="pl-c">// Cache data is match with remote data.</span>
+    .<span class="pl-en">onMatch</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+        <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>match:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
+    })
     <span class="pl-c">// Occur after 200 OK and cached done.</span>
     .<span class="pl-en">onSync</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onSync:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
     })
-    <span class="pl-c">// Capture error</span>
+    <span class="pl-c">// Something wrong.</span>
     .<span class="pl-c1">onError</span>(<span class="pl-k">function</span>(<span class="pl-smi">error</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onError : <span class="pl-pds">'</span></span> <span class="pl-k">+</span> error);
     })
@@ -120,7 +148,7 @@ so you will save your time going to remote server and be happy using local conte
     .<span class="pl-en">request</span>(<span class="pl-s"><span class="pl-pds">'</span>foo.json<span class="pl-pds">'</span></span>);</pre></div>
 
 <h1>
-<a id="advance" class="anchor" href="#advance" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Advance</h1>
+<a id="how-to-use-as-options-and-promise" class="anchor" href="#how-to-use-as-options-and-promise" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to use as options and promise.</h1>
 
 <div class="highlight highlight-source-js"><pre><span class="pl-smi">papergirl</span>.<span class="pl-en">getCacheFirst</span>(<span class="pl-s"><span class="pl-pds">'</span>foo.json<span class="pl-pds">'</span></span>, {
     <span class="pl-c">// Occur when got cached data.</span>
@@ -159,10 +187,16 @@ so you will save your time going to remote server and be happy using local conte
     <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">sync</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>sync<span class="pl-pds">'</span></span>);
     }
+}).<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
+    <span class="pl-c">// Done.</span>
+    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(data);
+}).<span class="pl-en">catch</span>(<span class="pl-k">function</span>(<span class="pl-smi">error</span>) {
+    <span class="pl-c">// Something wrong.</span>
+    <span class="pl-en">console</span>.<span class="pl-c1">log</span>(error);
 });</pre></div>
 
 <h1>
-<a id="events" class="anchor" href="#events" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Events</h1>
+<a id="options" class="anchor" href="#options" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Options</h1>
 
 <ul>
 <li>[x] <code>cache</code> : Occur when got cached data.</li>
@@ -189,24 +223,21 @@ so you will save your time going to remote server and be happy using local conte
 <li>[ ] Implement optional <code>last-modified</code>. // useLastModify</li>
 <li>[ ] Implement <code>last-modified</code> fallback.</li>
 <li>[ ] Test <code>last-modified</code> fallback.</li>
-<li>[ ] Test ready.</li>
+<li>[x] Test ready.</li>
 <li>[ ] Support multiple <code>storeName</code>.</li>
 <li>[ ] Support <code>Cache-Control: max-age</code>.</li>
 <li>[ ] Support xhr.responseTextType = 'json'.</li>
 <li>[ ] Ignore query when cache.</li>
 </ul>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Papergirl maintained by <a href="https://github.com/katopz">katopz</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/katopz/papergirl">Papergirl</a> is maintained by <a href="https://github.com/katopz">katopz</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-    
+    </section>
 
+  
   </body>
 </html>
