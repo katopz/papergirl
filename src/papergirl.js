@@ -98,7 +98,7 @@ const papergirl = (function(globalObject) {
                             } catch (error) {
                                 console.log(error);
                             }
-                            
+
                             self.setData(url, responseText, etag).then(function(data) {
                                 // Has cached?
                                 if (options.data === null || typeof (options.data) === 'undefined') {
@@ -135,11 +135,14 @@ const papergirl = (function(globalObject) {
                         case 304:
                             // No update, will use data in local storage.
                             if (options.data) {
-                                // Cached data.
-                                resolve(options.data);
-
                                 // Hook not modify
                                 self._hook(options, 'not_mod', [options.data, url, options]);
+                                
+                                // OK, from cached
+                                self._hook(options, 'sync', [options.data, url, options]);
+
+                                // Cached data.
+                                resolve(options.data);
 
                                 // Free some ram.
                                 self.delloc(options);
@@ -320,17 +323,17 @@ const papergirl = (function(globalObject) {
             this._onCache = func;
             return this;
         }
-        
+
         onSend(func) {
             this._onSend = func;
             return this;
         }
-        
+
         onLoad(func) {
             this._onLoad = func;
             return this;
         }
-        
+
         onInsert(func) {
             this._onInsert = func;
             return this;

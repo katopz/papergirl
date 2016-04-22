@@ -1,6 +1,6 @@
 /*!
     Papergirl -- XHR+ETAG
-    Version 0.5.4
+    Version 0.6.1
 */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -206,11 +206,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        case 304:
 	                            // No update, will use data in local storage.
 	                            if (options.data) {
-	                                // Cached data.
-	                                resolve(options.data);
-
 	                                // Hook not modify
 	                                self._hook(options, 'not_mod', [options.data, url, options]);
+
+	                                // OK, from cached
+	                                self._hook(options, 'sync', [options.data, url, options]);
+
+	                                // Cached data.
+	                                resolve(options.data);
 
 	                                // Free some ram.
 	                                self.delloc(options);

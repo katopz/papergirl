@@ -7,10 +7,10 @@ to let you know that you already have content in your hand by `etag`
 so you will save your time going to remote server and be happy using local content.   
 
 ```
-                                 ┌───(304)────────────────────────── not_mod ──┐ 
-                                 │         ┌─ insert ─┐                        │ ┌─ done
- request ─┬─────────┬─ send ── load ─(200)─┤          ├─ upsert ─┬── sync ─────┴─┤
-          └─ cache ─┘                      ├─ update ─┘          │               └─ error
+                                 ┌───(304)────────────── not_mod ┐
+                                 │         ┌─ insert ─┐          │ ┌─▪ sync
+ request ─┬─────────┬─ send ── load ─(200)─┤          ├─ upsert ─┼─┤
+          └─ cache ─┘                      ├─ update ─┘          │ └─▫ error
                ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪└──────────── match ──┘
 ```
 Stack
@@ -103,7 +103,7 @@ papergirl.watch()
     .onMatch(function(data) {
         console.log('match:' + data);
     })
-    // Occur after 200 OK and cached done.
+    // Occur after response and cached is done.
     .onSync(function(data) {
         console.log('onSync:' + data);
     })
@@ -152,7 +152,7 @@ papergirl.getCacheFirst('foo.json', {
     'not_mod': function(data) {
         console.log('not_mod');
     },
-    // Occur after 200 OK and cached done.
+    // Occur after response and cached is done.
     'sync': function(data) {
         console.log('sync');
     }
@@ -165,6 +165,21 @@ papergirl.getCacheFirst('foo.json', {
 });
 ```
 
+How to develop
+===
+Run 
+```shell
+npm run dev
+```
+Test 
+```shell
+npm test
+```
+Deploy to git and npm
+```shell
+npm run deploy
+```
+
 Options
 ===
 - [x] `cache` : Occur when got cached data.
@@ -175,7 +190,7 @@ Options
 - [x] `upsert` : Cache get `insert` or `update` from remote.
 - [x] `match` : Cache data is match with remote data.
 - [x] `not_mod` : Cache is match with remote by ETag.
-- [x] `sync` : Occur after 200 or 304 and cached done.
+- [x] `sync` : Occur after response and cached is done.
 
 TODO
 ===

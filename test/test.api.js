@@ -43,7 +43,7 @@ describe('Papergirl', function() {
             .request(mock.FOO_URL);
     });
 
-    it('can get sync event when remote and cached method is completed [callback]', function(done) {
+    it('can return cached data via sync event after reponse from remote [callback]', function(done) {
         papergirl.watch().onSync(function(data) {
             assert(expect(data).to.be(mock.FOO_DATA));
             done();
@@ -281,7 +281,7 @@ describe('Papergirl', function() {
                 assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('match');
             })
-            // Occur after 200 OK and cached done.
+            // Occur after response and cached is done.
             .onSync(function(data) {
                 assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('sync');
@@ -340,7 +340,7 @@ describe('Papergirl', function() {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('match');
                 })
-                // Occur after 200 OK and cached done.
+                // Occur after response and cached is done.
                 .onSync(function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
@@ -400,7 +400,7 @@ describe('Papergirl', function() {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('match');
                 })
-                // Occur after 200 OK and cached done.
+                // Occur after response and cached is done.
                 .onSync(function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
@@ -467,7 +467,7 @@ describe('Papergirl', function() {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('not_mod');
                 },
-                // Occur after 200 OK and cached done.
+                // Occur after response and cached is done.
                 'sync': function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
@@ -527,7 +527,7 @@ describe('Papergirl', function() {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('not_mod');
                 },
-                // Occur after 200 OK and cached done.
+                // Occur after response and cached is done.
                 'sync': function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
@@ -582,7 +582,7 @@ describe('Papergirl', function() {
                 assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('not_mod');
             },
-            // Occur after 200 OK and cached done.
+            // Occur after response and cached is done.
             'sync': function(data) {
                 assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('sync');
