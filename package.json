@@ -23,7 +23,7 @@
     "dev": "npm run open:dev&&cross-env http-server",
     "preinstall": "bower install",
     "test": "node -e \"require('grunt').cli()\" null test",
-    "deploy": "grunt build && git add . && git commit -m 'release!' && git push && npm publish"
+    "deploy": "grunt build && git add . && git commit -m release && git push && npm publish"
   },
   "devDependencies": {
     "babel-core": "^6.5.1",
