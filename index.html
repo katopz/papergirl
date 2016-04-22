@@ -30,10 +30,10 @@
 to let you know that you already have content in your hand by <code>etag</code><br>
 so you will save your time going to remote server and be happy using local content.   </p>
 
-<pre><code>                                 ┌───(304)────────────────────────── not_mod ──┐ 
-                                 │         ┌─ insert ─┐                        │ ┌─ done
- request ─┬─────────┬─ send ── load ─(200)─┤          ├─ upsert ─┬── sync ─────┴─┤
-          └─ cache ─┘                      ├─ update ─┘          │               └─ error
+<pre><code>                                 ┌───(304)────────────── not_mod ┐
+                                 │         ┌─ insert ─┐          │ ┌─▪ sync
+ request ─┬─────────┬─ send ── load ─(200)─┤          ├─ upsert ─┼─┤
+          └─ cache ─┘                      ├─ update ─┘          │ └─▫ error
                ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪└──────────── match ──┘
 </code></pre>
 
@@ -134,7 +134,7 @@ so you will save your time going to remote server and be happy using local conte
     .<span class="pl-en">onMatch</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>match:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
     })
-    <span class="pl-c">// Occur after 200 OK and cached done.</span>
+    <span class="pl-c">// Occur after response and cached is done.</span>
     .<span class="pl-en">onSync</span>(<span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>onSync:<span class="pl-pds">'</span></span> <span class="pl-k">+</span> data);
     })
@@ -183,7 +183,7 @@ so you will save your time going to remote server and be happy using local conte
     <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">not_mod</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>not_mod<span class="pl-pds">'</span></span>);
     },
-    <span class="pl-c">// Occur after 200 OK and cached done.</span>
+    <span class="pl-c">// Occur after response and cached is done.</span>
     <span class="pl-s"><span class="pl-pds">'</span><span class="pl-en">sync</span><span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {
         <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-s"><span class="pl-pds">'</span>sync<span class="pl-pds">'</span></span>);
     }
@@ -194,6 +194,21 @@ so you will save your time going to remote server and be happy using local conte
     <span class="pl-c">// Something wrong.</span>
     <span class="pl-en">console</span>.<span class="pl-c1">log</span>(error);
 });</pre></div>
+
+<h1>
+<a id="how-to-develop" class="anchor" href="#how-to-develop" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to develop</h1>
+
+<p>Run </p>
+
+<div class="highlight highlight-source-shell"><pre>npm run dev</pre></div>
+
+<p>Test </p>
+
+<div class="highlight highlight-source-shell"><pre>npm <span class="pl-c1">test</span></pre></div>
+
+<p>Deploy to git and npm</p>
+
+<div class="highlight highlight-source-shell"><pre>npm run deploy</pre></div>
 
 <h1>
 <a id="options" class="anchor" href="#options" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Options</h1>
@@ -207,7 +222,7 @@ so you will save your time going to remote server and be happy using local conte
 <li>[x] <code>upsert</code> : Cache get <code>insert</code> or <code>update</code> from remote.</li>
 <li>[x] <code>match</code> : Cache data is match with remote data.</li>
 <li>[x] <code>not_mod</code> : Cache is match with remote by ETag.</li>
-<li>[x] <code>sync</code> : Occur after 200 or 304 and cached done.</li>
+<li>[x] <code>sync</code> : Occur after response and cached is done.</li>
 </ul>
 
 <h1>
