@@ -367,7 +367,7 @@ const papergirl = (function(globalObject) {
         request(url, options) {
             const self = this;
             options = options || {};
-            options.strategy = this.cacheFirst;
+            options.strategy = this.parent.cacheFirst;
 
             options.cache = this._onCache;
             options.beforeSend = this._onSend;
