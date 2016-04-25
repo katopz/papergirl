@@ -137,7 +137,7 @@ const papergirl = (function(globalObject) {
                             if (options.data) {
                                 // Hook not modify
                                 self._hook(options, 'not_mod', [options.data, url, options]);
-                                
+
                                 // OK, from cached
                                 self._hook(options, 'sync', [options.data, url, options]);
 
@@ -218,6 +218,8 @@ const papergirl = (function(globalObject) {
                         // Fail, try cache.
                         self.getData(url).then(function(data) {
                             if (data) {
+                                // Cache later.
+                                self._hook(options, 'cache', [data, url, options]);
                                 resolve(data);
                             } else {
                                 reject(new Error('Network Error and no cached. : ' + error));
@@ -295,16 +297,6 @@ const papergirl = (function(globalObject) {
 
         // Public Methods -----------------------------------------------------------------------------------------------
 
-        // Expected got_catch, upsert via options
-        getCacheFirst(url, options) {
-            // Cache first.
-            options = options || {};
-            options.strategy = this.cacheFirst;
-
-            // Then remote.
-            return this.request(url, options);
-        }
-
         watch(me) {
             // TODO : unique, timeout
             const _me = me || {};
@@ -364,10 +356,28 @@ const papergirl = (function(globalObject) {
             return this;
         }
 
+        getCacheFirst(url, options) {
+            // Cache first.
+            options = options || {};
+            options.strategy = this.parent.cacheFirst;
+
+            // Then remote.
+            return this.request(url, options);
+        }
+
+        getNetworkFirst(url, options) {
+            // Cache first.
+            options = options || {};
+            options.strategy = this.parent.networkFirst;
+
+            // Then remote.
+            return this.request(url, options);
+        }
+
         request(url, options) {
             const self = this;
             options = options || {};
-            options.strategy = this.parent.cacheFirst;
+            options.strategy = options.strategy || this.parent.cacheFirst;
 
             options.cache = this._onCache;
             options.beforeSend = this._onSend;
@@ -384,7 +394,7 @@ const papergirl = (function(globalObject) {
                 url = this._local_uri;
             }
 
-            this.parent.getCacheFirst(url, options).then(function() {
+            this.parent.request(url, options).then(function() {
                 self.delloc(self);
             }).catch(this._onError);
 

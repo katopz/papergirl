@@ -289,6 +289,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        // Fail, try cache.
 	                        self.getData(url).then(function (data) {
 	                            if (data) {
+	                                // Cache later.
+	                                self._hook(options, 'cache', [data, url, options]);
 	                                resolve(data);
 	                            } else {
 	                                reject(new Error('Network Error and no cached. : ' + error));
@@ -370,18 +372,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // Public Methods -----------------------------------------------------------------------------------------------
 
-	        // Expected got_catch, upsert via options
-
-
-	        Papergirl.prototype.getCacheFirst = function getCacheFirst(url, options) {
-	            // Cache first.
-	            options = options || {};
-	            options.strategy = this.cacheFirst;
-
-	            // Then remote.
-	            return this.request(url, options);
-	        };
-
 	        Papergirl.prototype.watch = function watch(me) {
 	            // TODO : unique, timeout
 	            var _me = me || {};
@@ -444,12 +434,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this;
 	        };
 
-	        F.prototype.request = function request(url, options) {
-	            var self = this;
+	        F.prototype.getCacheFirst = function getCacheFirst(url, options) {
+	            // Cache first.
 	            options = options || {};
 	            options.strategy = this.parent.cacheFirst;
 
-	            console.log('options.strategy:' + options.strategy);
+	            // Then remote.
+	            return this.request(url, options);
+	        };
+
+	        F.prototype.getNetworkFirst = function getNetworkFirst(url, options) {
+	            // Cache first.
+	            options = options || {};
+	            options.strategy = this.parent.networkFirst;
+
+	            // Then remote.
+	            return this.request(url, options);
+	        };
+
+	        F.prototype.request = function request(url, options) {
+	            var self = this;
+	            options = options || {};
+	            options.strategy = options.strategy || this.parent.cacheFirst;
 
 	            options.cache = this._onCache;
 	            options.beforeSend = this._onSend;
@@ -466,7 +472,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                url = this._local_uri;
 	            }
 
-	            this.parent.getCacheFirst(url, options).then(function () {
+	            this.parent.request(url, options).then(function () {
 	                self.delloc(self);
 	            })["catch"](this._onError);
 

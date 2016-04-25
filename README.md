@@ -1,5 +1,3 @@
-> PS : In heavy development, please leave her alone for now. :)
-
 Papergirl
 ===
 Papergirl will deliver content when you make a request. She's smart enough  
@@ -119,7 +117,7 @@ papergirl.watch()
 How to use as options and promise.
 ===
 ```js
-papergirl.getCacheFirst('foo.json', {
+papergirl.request('foo.json', {
     // Occur when got cached data.
     'cache': function(data) {
         console.log(data);
@@ -195,7 +193,7 @@ Options
 TODO
 ===
 - [x] Test strategy.cacheFirst.
-- [ ] Test strategy.networkFirst.
+- [x] Test strategy.networkFirst.
 - [ ] Test strategy.cacheOnly.
 - [ ] Test strategy.networkOnly.
 - [ ] Test parallel requests.

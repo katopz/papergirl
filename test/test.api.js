@@ -31,6 +31,54 @@ describe('Papergirl', function() {
 
     // Public Methods -----------------------------------------------------------------------------------------------
 
+    it('can fallback to cached later if remote failed [callback]', function(done) {
+        var _404_URL = '404' + mock.FOO_URL;
+
+        // Simulated old content as BAR
+        papergirl.setData(_404_URL, mock.BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.BAR_DATA));
+
+            papergirl.watch()
+                .onCache(function(data) {
+                    // Call later because we use network first.
+                    assert(expect(data).to.be(mock.BAR_DATA));
+                    done();
+                })
+                .onSync(function(data) {
+                    // This should not be call.
+                    throw new Error('This shouldn\'t be call : ' + data);
+                })
+                .onError(function(error) {
+                    // This should not be call.
+                    throw new Error('This shouldn\'t be call : ' + error);
+                })
+                .getNetworkFirst(_404_URL);
+        });
+    });
+
+    it('can remote first [callback]', function(done) {
+        // Simulated old content as BAR
+        papergirl.setData(mock.FOO_URL, mock.BAR_DATA).then(function(data) {
+            assert(expect(data).to.be(mock.BAR_DATA));
+
+            papergirl.watch()
+                .onCache(function(data) {
+                    // This should not be call.
+                    throw new Error('This shouldn\'t be call : ' + data);
+                })
+                .onSync(function(data) {
+                    // Call later because we use network first.
+                    assert(expect(data).to.be(mock.FOO_DATA));
+                    done();
+                })
+                .onError(function(error) {
+                    // This should not be call.
+                    throw new Error('This shouldn\'t be call : ' + error);
+                })
+                .getNetworkFirst(mock.FOO_URL);
+        });
+    });
+
     it('can detect localhost origin and fallback to local uri if provide [callback]', function(done) {
         papergirl.watch()
             .onUpsert(function(data) {
@@ -426,7 +474,7 @@ describe('Papergirl', function() {
             // Cached as FOO
             assert(expect(data).to.be(mock.FOO_DATA));
             // Load FOO from remote.
-            papergirl.getCacheFirst(mock.FOO_URL, {
+            papergirl.request(mock.FOO_URL, {
                 // Occur when got cached data.
                 'cache': function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
@@ -486,7 +534,7 @@ describe('Papergirl', function() {
             // Cached as BAR
             assert(expect(data).to.be(mock.BAR_DATA));
             // Load FOO from remote.
-            papergirl.getCacheFirst(mock.FOO_URL, {
+            papergirl.request(mock.FOO_URL, {
                 // Occur when got cached data.
                 'cache': function(data) {
                     assert(expect(data).to.be(mock.BAR_DATA));
@@ -541,7 +589,7 @@ describe('Papergirl', function() {
     it('can watch first request for beforeSend, onload, insert, upsert, sync', function(done) {
         var events = [];
 
-        papergirl.getCacheFirst(mock.FOO_URL, {
+        papergirl.request(mock.FOO_URL, {
             // Occur when got cached data.
             'cache': function(data) {
                 assert(expect(data).not.to.be.ok);

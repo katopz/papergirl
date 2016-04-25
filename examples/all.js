@@ -4,7 +4,7 @@ var timeuse_cache_local;
 var timeuse_cache_remote;
 
 // Will get from cached first if has and then localhost after that.
-papergirl.getCacheFirst('foo.json', {
+papergirl.request('foo.json', {
     // Occur when got cached data.
     'cache': function(data) {
         timeuse_cache_local = new Date().valueOf() - beg_local;
@@ -59,7 +59,7 @@ papergirl.getCacheFirst('foo.json', {
 var beg_remote = new Date().valueOf();
 
 // Will get from cached first if has and then remote host after that.
-papergirl.getCacheFirst('https://raw.githubusercontent.com/katopz/papergirl/master/package.json', {
+papergirl.request('https://raw.githubusercontent.com/katopz/papergirl/master/package.json', {
     'cache': function(data) {
         timeuse_cache_remote = new Date().valueOf() - beg_remote;
 
