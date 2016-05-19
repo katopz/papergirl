@@ -1,7 +1,7 @@
 {
   "name": "papergirl",
   "description": "XHR with ETAG via localForage",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": "Todsaporn Banjerdkit <katopz@gmail.com>",
   "keywords": [
     "javascript",
