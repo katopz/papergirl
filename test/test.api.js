@@ -31,6 +31,54 @@ describe('Papergirl', function() {
 
     // Public Methods -----------------------------------------------------------------------------------------------
 
+    it('can can async parallel requests and get `onMatch` if cached after `onInsert`', function(done) {
+        var self = this;
+        self.j = 0;
+        var onInsert = function(data) {
+            // This should be call once or twice depend on network latency.
+            assert(expect(data).to.be(mock.FOO_DATA));
+            ++self.j;
+        };
+        
+        var onMatch = function(data) {
+            // This should call after cached is available after onInsert.
+            assert(expect(data).to.be(mock.FOO_DATA));
+            if (++self.j === 9)
+            {
+                done();
+            }
+        };
+        
+        // Bullet
+        var loadFOO = function()
+        {
+            papergirl.watch().onMatch(onMatch).onInsert(onInsert).request(mock.FOO_URL);
+        };
+        
+        // Fire bullet one by one.
+        for (var i=0; i< 10; i++)
+        {
+            setTimeout(loadFOO, i*10);
+        }
+    });
+    
+    it('can can sync parallel requests', function(done) {
+        var j = 0;
+        var onInsert = function(data) {
+            assert(expect(data).to.be(mock.FOO_DATA));
+            if (++j === 9)
+            {
+                done();
+            }
+        };
+        
+        for (var i=0; i< 10; i++)
+        {
+            papergirl.watch().onInsert(onInsert).request(mock.FOO_URL);
+        }
+    });
+    
+
     it('can fallback to cached later if remote failed [callback]', function(done) {
         var _404_URL = '404' + mock.FOO_URL;
 

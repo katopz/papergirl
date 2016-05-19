@@ -196,7 +196,7 @@ TODO
 - [x] Test strategy.networkFirst.
 - [ ] Test strategy.cacheOnly.
 - [ ] Test strategy.networkOnly.
-- [ ] Test parallel requests.
+- [x] Test parallel requests.
 - [ ] Implement optional `etag`. // useIfNoneMatch
 - [ ] Implement optional `last-modified`. // useLastModify
 - [ ] Implement `last-modified` fallback.
