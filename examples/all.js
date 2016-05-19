@@ -17,7 +17,7 @@ papergirl.request('foo.json', {
         xhr.setRequestHeader('foo', 'bar');
     },
     // Intercept xhr while onload
-    'onload': function(xhr) {
+    'load': function(xhr) {
         console.log(xhr);
     },
     // Occur when never cache before and get insert from remote.

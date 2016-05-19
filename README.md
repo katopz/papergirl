@@ -81,7 +81,7 @@ papergirl.watch()
     .onSend(function(xhr) {
         xhr.setRequestHeader('foo', 'bar');
     })
-    // Intercept xhr while onload
+    // Intercept xhr while load
     .onLoad(function(xhr) {
         console.log(xhr);
     })
@@ -126,8 +126,8 @@ papergirl.request('foo.json', {
     'send': function(xhr) {
         xhr.setRequestHeader('foo', 'bar');
     },
-    // Intercept xhr while onload
-    'onload': function(xhr) {
+    // Intercept xhr while load
+    'load': function(xhr) {
         console.log(xhr);
     },
     // Occur when never cache before and get insert from remote.
@@ -182,7 +182,7 @@ Options
 ===
 - [x] `cache` : Occur when got cached data.
 - [x] `send`: Intercept xhr request usually to modify headers before send.
-- [x] `onload`: Intercept xhr while onload.
+- [x] `load`: Intercept xhr while onload.
 - [x] `insert` : Occur when never cache before and get insert from remote.
 - [x] `update` : Cached but not match from remote.
 - [x] `upsert` : Cache get `insert` or `update` from remote.

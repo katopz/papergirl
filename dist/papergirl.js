@@ -829,7 +829,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                xhr.onload = function () {
 
 	                    // Hook onload state.
-	                    self._hook(options, 'onload', [xhr]);
+	                    self._hook(options, 'load', [xhr]);
 
 	                    // Free some ram.
 	                    self.delloc = function (options) {
@@ -1142,7 +1142,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            options.cache = this._onCache;
 	            options.send = this._onSend;
-	            options.onload = this._onLoad;
+	            options.load = this._onLoad;
 	            options.insert = this._onInsert;
 	            options.update = this._onUpdate;
 	            options.upsert = this._onUpsert;
