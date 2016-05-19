@@ -123,7 +123,7 @@ papergirl.request('foo.json', {
         console.log(data);
     },
     // Intercept xhr request to modify headers before send.
-    'beforeSend': function(xhr) {
+    'send': function(xhr) {
         xhr.setRequestHeader('foo', 'bar');
     },
     // Intercept xhr while onload
@@ -181,7 +181,7 @@ npm run deploy
 Options
 ===
 - [x] `cache` : Occur when got cached data.
-- [x] `beforeSend`: Intercept xhr request usually to modify headers before send.
+- [x] `send`: Intercept xhr request usually to modify headers before send.
 - [x] `onload`: Intercept xhr while onload.
 - [x] `insert` : Occur when never cache before and get insert from remote.
 - [x] `update` : Cached but not match from remote.

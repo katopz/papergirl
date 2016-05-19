@@ -289,7 +289,7 @@ describe('Papergirl', function() {
 
     // All fucntional Methods -----------------------------------------------------------------------------------------------
 
-    it('can tell that cache is not exist and get insert (beforeSend, onload, insert, upsert, sync)', function(done) {
+    it('can tell that cache is not exist and get insert (send, onload, insert, upsert, sync)', function(done) {
         var events = [];
 
         // Load FOO from remote.
@@ -302,7 +302,7 @@ describe('Papergirl', function() {
             // Intercept xhr request to modify headers before send.
             .onSend(function(xhr) {
                 assert(expect(xhr).to.be.ok);
-                events.push('beforeSend');
+                events.push('send');
             })
             // Intercept xhr while onload
             .onLoad(function(xhr) {
@@ -333,7 +333,7 @@ describe('Papergirl', function() {
             .onSync(function(data) {
                 assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('sync');
-                assert(expect(events.join(',')).to.be(['beforeSend', 'onload', 'insert', 'upsert', 'sync'].join(',')));
+                assert(expect(events.join(',')).to.be(['send', 'onload', 'insert', 'upsert', 'sync'].join(',')));
                 done();
             })
             // Capture error
@@ -344,7 +344,7 @@ describe('Papergirl', function() {
             .request(mock.FOO_URL);
     });
 
-    it('can tell that cached is match (cache, beforeSend, onload, match, sync)', function(done) {
+    it('can tell that cached is match (cache, send, onload, match, sync)', function(done) {
         var events = [];
 
         // Simulated old content as FOO
@@ -361,7 +361,7 @@ describe('Papergirl', function() {
                 // Intercept xhr request to modify headers before send.
                 .onSend(function(xhr) {
                     assert(expect(xhr).to.be.ok);
-                    events.push('beforeSend');
+                    events.push('send');
                 })
                 // Intercept xhr while onload
                 .onLoad(function(xhr) {
@@ -392,7 +392,7 @@ describe('Papergirl', function() {
                 .onSync(function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
-                    assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'match', 'sync'].join(',')));
+                    assert(expect(events.join(',')).to.be(['cache', 'send', 'onload', 'match', 'sync'].join(',')));
                     done();
                 })
                 // Capture error
@@ -404,7 +404,7 @@ describe('Papergirl', function() {
         });
     });
 
-    it('can tell that existing cache is updated (cache, beforeSend, onload, update, upsert, sync)', function(done) {
+    it('can tell that existing cache is updated (cache, send, onload, update, upsert, sync)', function(done) {
         var events = [];
 
         // Simulated old content as BAR
@@ -421,7 +421,7 @@ describe('Papergirl', function() {
                 // Intercept xhr request to modify headers before send.
                 .onSend(function(xhr) {
                     assert(expect(xhr).to.be.ok);
-                    events.push('beforeSend');
+                    events.push('send');
                 })
                 // Intercept xhr while onload
                 .onLoad(function(xhr) {
@@ -452,7 +452,7 @@ describe('Papergirl', function() {
                 .onSync(function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
-                    assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'update', 'upsert', 'sync'].join(',')));
+                    assert(expect(events.join(',')).to.be(['cache', 'send', 'onload', 'update', 'upsert', 'sync'].join(',')));
                     done();
                 })
                 // Capture error
@@ -466,7 +466,7 @@ describe('Papergirl', function() {
 
     // All Methods -----------------------------------------------------------------------------------------------
 
-    it('can watch request after cached match for cache, beforeSend, onload, match, sync', function(done) {
+    it('can watch request after cached match for cache, send, onload, match, sync', function(done) {
         var events = [];
 
         // Simulated old content as FOO
@@ -481,9 +481,9 @@ describe('Papergirl', function() {
                     events.push('cache');
                 },
                 // Intercept xhr request to modify headers before send.
-                'beforeSend': function(xhr) {
+                'send': function(xhr) {
                     assert(expect(xhr).to.be.ok);
-                    events.push('beforeSend');
+                    events.push('send');
                 },
                 // Intercept xhr while onload
                 'onload': function(xhr) {
@@ -519,14 +519,14 @@ describe('Papergirl', function() {
                 'sync': function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
-                    assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'match', 'sync'].join(',')));
+                    assert(expect(events.join(',')).to.be(['cache', 'send', 'onload', 'match', 'sync'].join(',')));
                     done();
                 }
             });
         });
     });
 
-    it('can watch request after cached for cache, beforeSend, onload, update, upsert, sync', function(done) {
+    it('can watch request after cached for cache, send, onload, update, upsert, sync', function(done) {
         var events = [];
 
         // Simulated old content as BAR
@@ -541,9 +541,9 @@ describe('Papergirl', function() {
                     events.push('cache');
                 },
                 // Intercept xhr request to modify headers before send.
-                'beforeSend': function(xhr) {
+                'send': function(xhr) {
                     assert(expect(xhr).to.be.ok);
-                    events.push('beforeSend');
+                    events.push('send');
                 },
                 // Intercept xhr while onload
                 'onload': function(xhr) {
@@ -579,14 +579,14 @@ describe('Papergirl', function() {
                 'sync': function(data) {
                     assert(expect(data).to.be(mock.FOO_DATA));
                     events.push('sync');
-                    assert(expect(events.join(',')).to.be(['cache', 'beforeSend', 'onload', 'update', 'upsert', 'sync'].join(',')));
+                    assert(expect(events.join(',')).to.be(['cache', 'send', 'onload', 'update', 'upsert', 'sync'].join(',')));
                     done();
                 }
             });
         });
     });
 
-    it('can watch first request for beforeSend, onload, insert, upsert, sync', function(done) {
+    it('can watch first request for send, onload, insert, upsert, sync', function(done) {
         var events = [];
 
         papergirl.request(mock.FOO_URL, {
@@ -596,9 +596,9 @@ describe('Papergirl', function() {
                 events.push('cache');
             },
             // Intercept xhr request to modify headers before send.
-            'beforeSend': function(xhr) {
+            'send': function(xhr) {
                 assert(expect(xhr).to.be.ok);
-                events.push('beforeSend');
+                events.push('send');
             },
             // Intercept xhr while onload
             'onload': function(xhr) {
@@ -634,7 +634,7 @@ describe('Papergirl', function() {
             'sync': function(data) {
                 assert(expect(data).to.be(mock.FOO_DATA));
                 events.push('sync');
-                assert(expect(events.join(',')).to.be(['beforeSend', 'onload', 'insert', 'upsert', 'sync'].join(',')));
+                assert(expect(events.join(',')).to.be(['send', 'onload', 'insert', 'upsert', 'sync'].join(',')));
                 done();
             }
         });

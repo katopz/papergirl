@@ -244,8 +244,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    reject(new Error('Request Error : ' + e.target.status));
 	                };
 
-	                // Hook beforeSend state.
-	                self._hook(options, 'beforeSend', [xhr]);
+	                // Hook send state.
+	                self._hook(options, 'send', [xhr]);
 
 	                // Make a request.
 	                xhr.send();
@@ -458,7 +458,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            options.strategy = options.strategy || this.parent.cacheFirst;
 
 	            options.cache = this._onCache;
-	            options.beforeSend = this._onSend;
+	            options.send = this._onSend;
 	            options.onload = this._onLoad;
 	            options.insert = this._onInsert;
 	            options.update = this._onUpdate;

@@ -13,7 +13,7 @@ papergirl.request('foo.json', {
         document.getElementById('local-cached').innerHTML = '// Time used : ' + timeuse_cache_local + 'ms.<br>' + data;
     },
     // Intercept xhr request to modify headers before send.
-    'beforeSend': function(xhr) {
+    'send': function(xhr) {
         xhr.setRequestHeader('foo', 'bar');
     },
     // Intercept xhr while onload
